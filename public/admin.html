@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Administración - Casa Sabor</title>
+
+    <link rel="stylesheet" href="admin.css">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h1>🍽️ Casa Sabor</h1>
+
+        <button id="logoutButton">
+            Cerrar sesión
+        </button>
+
+    </header>
+
+    
+
+
+
+    <main>
+
+        <!-- ==============================
+             NAVEGACIÓN DEL ADMINISTRADOR
+        ============================== -->
+
+        <nav class="admin-navigation">
+
+            <a
+                href="#pedidos"
+                class="admin-nav-button"
+            >
+                🛒 Pedidos
+            </a>
+
+            <a
+                href="#productos"
+                class="admin-nav-button"
+            >
+                📦 Productos
+            </a>
+
+        <button
+        type="button"
+        class="admin-nav-button settings-button"
+        id="settingsButton"
+    >
+         Configuración ⚙️
+    </button>
+        </nav>
+
+
+
+<!-- ==============================
+     CONFIGURACIÓN
+============================== -->
+
+<section id="configuracion" class="admin-view">
+
+    <h2>⚙️ Configuración</h2>
+
+    <div class="configuration-options">
+
+        <a href="#clientes" class="configuration-option">
+            👥 Clientes
+        </a>
+
+        <a href="#cuenta" class="configuration-option">
+            👤 Cuenta
+        </a>
+
+        <a href="#restaurante" class="configuration-option">
+            🏪 Restaurante
+        </a>
+        
+
+    </div>
+
+</section>
+
+
+<!-- ==============================
+     EDITAR PÁGINA DEL RESTAURANTE
+============================== -->
+
+<section id="restaurante" class="admin-view">
+
+    <h2>🏪 Editar página</h2>
+
+
+    <!-- ========================================
+         INICIO
+    ======================================== -->
+
+    <div class="form-container">
+
+        <h3>🏠 Inicio</h3>
+
+        <div class="form-group">
+
+            <label for="restaurantName">
+                Nombre del restaurante
+            </label>
+
+            <input
+                type="text"
+                id="restaurantName"
+                placeholder="Ej. Casa Sabor"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantHeroSubtitle">
+                Frase superior
+            </label>
+
+            <input
+                type="text"
+                id="restaurantHeroSubtitle"
+                placeholder="Ej. BIENVENIDO A CASA SABOR"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantHeroTitle">
+                Título principal
+            </label>
+
+            <textarea
+                id="restaurantHeroTitle"
+                rows="3"
+                placeholder="Ej. Sabor casero, hecho con amor"
+            ></textarea>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantHeroDescription">
+                Descripción principal
+            </label>
+
+            <textarea
+                id="restaurantHeroDescription"
+                rows="4"
+                placeholder="Texto que aparece debajo del título"
+            ></textarea>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantHeroPrimaryButton">
+                Texto del botón principal
+            </label>
+
+            <input
+                type="text"
+                id="restaurantHeroPrimaryButton"
+                placeholder="Ej. Ver nuestro menú"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantHeroSecondaryButton">
+                Texto del segundo botón
+            </label>
+
+            <input
+                type="text"
+                id="restaurantHeroSecondaryButton"
+                placeholder="Ej. Contáctanos"
+            >
+
+        </div>
+
+
+        <button
+            type="button"
+            class="save-section-button"
+            id="saveHomeButton"
+        >
+            💾 Guardar cambios
+        </button>
+
+        <p
+            class="section-message"
+            id="homeMessage"
+        ></p>
+
+    </div>
+
+
+    <!-- ========================================
+         MENÚ
+    ======================================== -->
+
+    <div class="form-container">
+
+        <h3>🍽️ Menú</h3>
+
+        <div class="form-group">
+
+            <label for="restaurantMenuSubtitle">
+                Frase superior del menú
+            </label>
+
+            <input
+                type="text"
+                id="restaurantMenuSubtitle"
+                placeholder="Ej. DESCUBRE NUESTROS SABORES"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantMenuTitle">
+                Título del menú
+            </label>
+
+            <input
+                type="text"
+                id="restaurantMenuTitle"
+                placeholder="Ej. Nuestro menú"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantMenuDescription">
+                Descripción del menú
+            </label>
+
+            <textarea
+                id="restaurantMenuDescription"
+                rows="3"
+                placeholder="Descripción del menú..."
+            ></textarea>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="save-section-button"
+            id="saveMenuButton"
+        >
+            💾 Guardar cambios
+        </button>
+
+        <p
+            class="section-message"
+            id="menuMessage"
+        ></p>
+
+    </div>
+
+
+    <!-- ========================================
+         NOSOTROS
+    ======================================== -->
+
+    <div class="form-container">
+
+        <h3>ℹ️ Nosotros</h3>
+
+        <div class="form-group">
+
+            <label for="restaurantAboutSubtitle">
+                Frase superior
+            </label>
+
+            <input
+                type="text"
+                id="restaurantAboutSubtitle"
+                placeholder="Ej. CONÓCENOS"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantAboutTitle">
+                Título
+            </label>
+
+            <input
+                type="text"
+                id="restaurantAboutTitle"
+                placeholder="Ej. Sobre nosotros"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantAboutText">
+                Primer texto
+            </label>
+
+            <textarea
+                id="restaurantAboutText"
+                rows="4"
+                placeholder="Primer texto de Nosotros..."
+            ></textarea>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantAboutText2">
+                Segundo texto
+            </label>
+
+            <textarea
+                id="restaurantAboutText2"
+                rows="4"
+                placeholder="Segundo texto de Nosotros..."
+            ></textarea>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="save-section-button"
+            id="saveAboutButton"
+        >
+            💾 Guardar cambios
+        </button>
+
+        <p
+            class="section-message"
+            id="aboutMessage"
+        ></p>
+
+    </div>
+
+
+    <!-- ========================================
+         CONTACTO
+    ======================================== -->
+
+    <div class="form-container">
+
+        <h3>📞 Contacto</h3>
+
+        <div class="form-group">
+
+            <label for="restaurantContactSubtitle">
+                Frase superior
+            </label>
+
+            <input
+                type="text"
+                id="restaurantContactSubtitle"
+                placeholder="Ej. ESTAMOS PARA TI"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantContactTitle">
+                Título
+            </label>
+
+            <input
+                type="text"
+                id="restaurantContactTitle"
+                placeholder="Ej. Contáctanos"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantPhone">
+                Teléfono
+            </label>
+
+            <input
+                type="text"
+                id="restaurantPhone"
+                placeholder="Ej. 999 999 999"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantWhatsapp">
+                WhatsApp
+            </label>
+
+            <input
+                type="text"
+                id="restaurantWhatsapp"
+                placeholder="Ej. 999 999 999"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantAddress">
+                Dirección
+            </label>
+
+            <input
+                type="text"
+                id="restaurantAddress"
+                placeholder="Ej. Canta, Lima"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="restaurantHours">
+                Horario de atención
+            </label>
+
+            <input
+                type="text"
+                id="restaurantHours"
+                placeholder="Ej. Lunes a Domingo 9:00 AM - 10:00 PM"
+            >
+
+        </div>
+
+
+        <button
+            type="button"
+            class="save-section-button"
+            id="saveContactButton"
+        >
+            💾 Guardar cambios
+        </button>
+
+        <p
+            class="section-message"
+            id="contactMessage"
+        ></p>
+
+    </div>
+
+</section>
+
+
+
+        <!-- ==============================
+             PEDIDOS RECIBIDOS
+        ============================== -->
+
+       <section
+    id="pedidos"
+    class="orders-section admin-view"
+>
+
+            <div class="orders-header">
+
+                <h2>
+                    Pedidos recibidos
+                </h2>
+
+                <div class="pending-orders">
+
+                    📦 Pendientes:
+
+                    <span id="pendingOrdersCount">
+                        0
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- BUSCADOR -->
+
+            <div class="order-search">
+
+                <input
+                    type="text"
+                    id="orderSearch"
+                    placeholder="🔎 Buscar por cliente, teléfono o número de pedido..."
+                >
+
+            </div>
+
+
+            <!-- RESUMEN -->
+
+            <div class="order-summary">
+
+                <div class="summary-card">
+
+                    📦 Total
+
+                    <strong id="totalOrdersCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    🟡 Pendientes
+
+                    <strong id="pendingSummaryCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    🟢 Listos
+
+                    <strong id="readyOrdersCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    🔵 Entregados
+
+                    <strong id="deliveredOrdersCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card">
+                💰 Ventas
+                <strong id="totalSalesAmount">S/ 0.00</strong>
+                </div>
+
+
+
+
+            </div>
+
+
+            <!-- FILTROS DE PEDIDOS -->
+
+            <div class="order-filters">
+
+                <button
+                    class="order-filter active"
+                    data-status="Todos"
+                >
+                    Todos
+                </button>
+
+
+                <button
+                    class="order-filter"
+                    data-status="Pendiente"
+                >
+                    🟡 Pendientes
+                </button>
+
+
+                <button
+                    class="order-filter"
+                    data-status="En preparación"
+                >
+                    🟠 En preparación
+                </button>
+
+
+                <button
+                    class="order-filter"
+                    data-status="Listo"
+                >
+                    🟢 Listos
+                </button>
+
+
+                <button
+                    class="order-filter"
+                    data-status="Entregado"
+                >
+                    🔵 Entregados
+                </button>
+
+            </div>
+
+
+            <!-- LISTA DE PEDIDOS -->
+
+            <div id="orderList">
+
+                <p>
+                    Cargando pedidos...
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==============================
+             PRODUCTOS
+        ============================== -->
+
+        <section id="productos" class="admin-view">
+
+
+            <!-- ==============================
+                 FORMULARIO PARA AGREGAR PRODUCTO
+            ============================== -->
+
+            <section class="form-container">
+
+                <h2>
+                    Agregar producto
+                </h2>
+
+
+                <form id="productForm">
+
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Nombre del producto
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            placeholder="Ej. Lomo saltado"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="description">
+                            Descripción
+                        </label>
+
+                        <textarea
+                            id="description"
+                            placeholder="Describe el producto..."
+                        ></textarea>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="price">
+                            Precio
+                        </label>
+
+                        <input
+                            type="number"
+                            id="price"
+                            placeholder="Ej. 18.90"
+                            step="0.01"
+                            min="0"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="category">
+                            Categoría
+                        </label>
+
+                        <select
+                            id="category"
+                            required
+                        >
+
+                            <option value="Entradas">
+                                🍽️ Entradas
+                            </option>
+
+                            <option
+                                value="Platos principales"
+                                selected
+                            >
+                                🍛 Platos principales
+                            </option>
+
+                            <option value="Bebidas">
+                                🥤 Bebidas
+                            </option>
+
+                            <option value="Postres">
+                                🍰 Postres
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="image">
+                            Imagen del producto
+                        </label>
+
+                        <input
+                            type="file"
+                            id="image"
+                            accept="image/*"
+                        >
+
+                        <img
+                            id="imagePreview"
+                            class="image-preview"
+                            alt="Vista previa"
+                            style="display: none;"
+                        >
+
+                    </div>
+
+
+
+                    <button type="submit">
+                        ➕ Agregar producto
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <p id="message"></p>
+
+
+
+            <!-- ==============================
+                 PRODUCTOS ACTUALES
+            ============================== -->
+
+            <section>
+
+                <h2>
+                    Productos actuales
+                </h2>
+
+                <div class="product-summary">
+
+    <div class="product-summary-card">
+        🍽️ Productos
+        <strong id="totalProductsCount">0</strong>
+    </div>
+
+    <div class="product-summary-card">
+        ⚠️ No disponibles
+        <strong id="unavailableProductsCount">0</strong>
+    </div>
+
+</div>
+
+
+                <!-- FILTROS DE CATEGORÍAS -->
+
+                <div class="admin-category-filters">
+
+                    <button
+                        class="admin-category-filter active"
+                        data-category="Todos"
+                    >
+                        Todos
+                    </button>
+
+
+                    <button
+                        class="admin-category-filter"
+                        data-category="Entradas"
+                    >
+                        🍽️ Entradas
+                    </button>
+
+
+                    <button
+                        class="admin-category-filter"
+                        data-category="Platos principales"
+                    >
+                        🍛 Platos principales
+                    </button>
+
+
+                    <button
+                        class="admin-category-filter"
+                        data-category="Bebidas"
+                    >
+                        🥤 Bebidas
+                    </button>
+
+
+                    <button
+                        class="admin-category-filter"
+                        data-category="Postres"
+                    >
+                        🍰 Postres
+                    </button>
+
+                </div>
+
+
+                <div id="productList"></div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- ==============================
+         MODAL IMAGEN
+    ============================== -->
+
+    <div
+        id="imageModal"
+        class="image-modal"
+    >
+
+        <img
+            id="modalImage"
+            src=""
+            alt="Imagen ampliada"
+        >
+
+    </div>
+
+
+
+    <!-- ==============================
+         MODAL EDITAR PRODUCTO
+    ============================== -->
+
+    <div
+        id="editModal"
+        class="image-modal"
+    >
+
+        <div class="edit-form">
+
+            <h2>
+                Editar producto
+            </h2>
+
+
+            <label for="editName">
+                Nombre del producto
+            </label>
+
+            <input
+                type="text"
+                id="editName"
+            >
+
+
+            <label for="editDescription">
+                Descripción
+            </label>
+
+            <textarea
+                id="editDescription"
+            ></textarea>
+
+
+            <label for="editPrice">
+                Precio
+            </label>
+
+            <input
+                type="number"
+                id="editPrice"
+                step="0.01"
+                min="0"
+            >
+
+
+            <label for="editCategory">
+                Categoría
+            </label>
+
+            <select id="editCategory">
+
+                <option value="Entradas">
+                    🍽️ Entradas
+                </option>
+
+                <option value="Platos principales">
+                    🍛 Platos principales
+                </option>
+
+                <option value="Bebidas">
+                    🥤 Bebidas
+                </option>
+
+                <option value="Postres">
+                    🍰 Postres
+                </option>
+
+            </select>
+
+
+            <label>
+                Imagen actual
+            </label>
+
+            <img
+                id="editImagePreview"
+                class="image-preview"
+                alt="Imagen actual"
+            >
+
+
+            <label for="editImage">
+                Nueva imagen
+            </label>
+
+            <input
+                type="file"
+                id="editImage"
+                accept="image/*"
+            >
+
+
+            <div class="edit-buttons">
+
+                <button
+                    type="button"
+                    id="saveEditButton"
+                >
+                    💾 Guardar cambios
+                </button>
+
+
+                <button
+                    type="button"
+                    id="cancelEditButton"
+                >
+                    ❌ Cancelar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ==============================
+     CLIENTES
+============================== -->
+
+<section id="clientes" class="admin-section admin-view">
+
+    <h2>👥 Clientes</h2>
+
+    <div class="client-search">
+
+        <input
+            type="text"
+            id="clientSearch"
+            placeholder="🔎 Buscar por nombre o teléfono..."
+        >
+
+    </div>
+
+    <div id="clientList" class="client-list">
+
+        <p>No hay clientes registrados.</p>
+
+    </div>
+
+</section>
+
+
+<!-- ==============================
+     ADMINISTRACIÓN DE CUENTA
+============================== -->
+
+<section id="cuenta" class="account-section admin-view">
+
+    <div class="form-container">
+
+        <h2>👤 Administración de cuenta</h2>
+
+        <p>
+            Desde aquí puedes cambiar la contraseña de tu cuenta de administrador.
+        </p>
+
+        <form id="changePasswordForm">
+
+            <div class="form-group">
+
+                <label for="currentPassword">
+                    Contraseña actual
+                </label>
+
+                <input
+                    type="password"
+                    id="currentPassword"
+                    placeholder="Ingresa tu contraseña actual"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="newPassword">
+                    Nueva contraseña
+                </label>
+
+                <input
+                    type="password"
+                    id="newPassword"
+                    placeholder="Mínimo 8 caracteres"
+                    minlength="8"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="confirmPassword">
+                    Confirmar nueva contraseña
+                </label>
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Repite tu nueva contraseña"
+                    minlength="8"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                id="changePasswordButton"
+            >
+                🔐 Cambiar contraseña
+            </button>
+
+        </form>
+
+        <p id="passwordMessage"></p>
+
+    </div>
+
+</section>
+
+
+</section>
+
+
+
+    <script src="admin.js"></script>
+
+</body>
+
+</html>

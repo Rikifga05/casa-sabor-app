@@ -1,0 +1,274 @@
+/* ========================================
+   LOGIN - CASA SABOR
+======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    background:
+        linear-gradient(
+            135deg,
+            #fff8f0,
+            #f7e8d5
+        );
+    color: #3d2b1f;
+}
+
+
+/* ========================================
+   CONTENEDOR PRINCIPAL
+======================================== */
+
+.login-page {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+}
+
+
+/* ========================================
+   TARJETA
+======================================== */
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+
+    background: #ffffff;
+
+    padding: 42px 36px;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.12);
+
+    text-align: center;
+}
+
+
+/* ========================================
+   LOGO
+======================================== */
+
+.login-logo {
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f3dfc7;
+
+    border-radius: 50%;
+
+    font-size: 34px;
+}
+
+
+.login-card h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+
+    color: #6b3e26;
+}
+
+
+.login-subtitle {
+    font-size: 15px;
+
+    color: #777;
+
+    margin-bottom: 32px;
+}
+
+
+/* ========================================
+   FORMULARIO
+======================================== */
+
+.form-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #4d3427;
+}
+
+
+.form-group input {
+    width: 100%;
+
+    padding: 14px 15px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.form-group input::placeholder {
+    color: #aaa;
+}
+
+
+.form-group input:focus {
+    border-color: #b87445;
+
+    box-shadow:
+        0 0 0 3px rgba(184, 116, 69, 0.12);
+
+    background: #fffdfa;
+}
+
+
+/* ========================================
+   BOTÓN
+======================================== */
+
+.login-button {
+    width: 100%;
+
+    padding: 14px 18px;
+
+    margin-top: 8px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #8b4f2c;
+
+    color: #ffffff;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.login-button:hover {
+    background: #713d21;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 18px rgba(113, 61, 33, 0.2);
+}
+
+
+.login-button:active {
+    transform: translateY(0);
+}
+
+
+/* ========================================
+   MENSAJE
+======================================== */
+
+.login-message {
+    min-height: 22px;
+
+    margin-top: 18px;
+
+    font-size: 14px;
+
+    color: #c0392b;
+}
+
+
+/* ========================================
+   VOLVER
+======================================== */
+
+.back-link {
+    display: inline-block;
+
+    margin-top: 18px;
+
+    color: #8b4f2c;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    transition: color 0.2s ease;
+}
+
+
+.back-link:hover {
+    color: #5e321c;
+
+    text-decoration: underline;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 480px) {
+
+    .login-page {
+        padding: 16px;
+    }
+
+
+    .login-card {
+        padding: 34px 24px;
+
+        border-radius: 16px;
+    }
+
+
+    .login-card h1 {
+        font-size: 28px;
+    }
+
+
+    .login-logo {
+        width: 64px;
+        height: 64px;
+
+        font-size: 30px;
+    }
+
+}

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Casa Sabor | Restaurante</title>
+
+    <meta
+        name="description"
+        content="Casa Sabor - Disfruta nuestros deliciosos platos preparados con sabor casero."
+    >
+
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+    <!-- ==============================
+         ENCABEZADO
+    =============================== -->
+
+    <header class="main-header">
+
+        <a href="#inicio" class="logo">
+    <span>🍽️</span>
+    <span id="publicRestaurantName">Casa Sabor</span>
+</a>
+
+        <nav class="main-nav">
+
+            <a href="#inicio">Inicio</a>
+
+            <a href="#menu">Menú</a>
+
+            <a href="#nosotros">Nosotros</a>
+
+            <a href="#contacto">Contacto</a>
+
+             <button id="cartButton" class="cart-button">
+        🛒 Mi pedido
+    </button>
+
+        </nav>
+
+    </header>
+
+
+    <div id="cartModal" class="cart-modal">
+
+    <div class="cart-content">
+
+        <button id="closeCart" class="close-cart">✕</button>
+
+        <h2>🛒 Mi pedido</h2>
+
+        <div id="cartItems">
+            <p>Tu pedido está vacío.</p>
+        </div>
+
+        <div class="cart-total">
+            Total: S/ <span id="cartTotal">0.00</span>
+        </div>
+
+        <button id="checkoutButton" class="checkout-button">
+            Confirmar pedido
+        </button>
+        <div id="checkoutForm" class="checkout-form">
+
+    <h3>Datos para tu pedido</h3>
+
+    <input
+        type="text"
+        id="customerName"
+        placeholder="Tu nombre"
+    >
+
+    <input
+        type="text"
+        id="customerPhone"
+        placeholder="Tu teléfono"
+    >
+
+    <textarea
+        id="customerAddress"
+        placeholder="Dirección de entrega"
+        rows="3"
+    ></textarea>
+
+    <button id="sendOrderButton" class="checkout-button">
+        Enviar pedido
+    </button>
+
+</div>
+
+    </div>
+
+</div>
+
+
+    <!-- ==============================
+         INICIO
+    =============================== -->
+
+    <main>
+
+        <section id="inicio" class="hero">
+
+            <div class="hero-content">
+
+               <p id="publicHeroSubtitle" class="hero-subtitle">
+                    BIENVENIDO A CASA SABOR
+                </p>
+
+                <h1 id="publicHeroTitle">
+                    Sabor casero,<br>
+                    hecho con amor
+                </h1>
+
+                <p id="publicHeroDescription" class="hero-description">
+                    Disfruta platos preparados con dedicación,
+                    ingredientes frescos y ese sabor que te hace
+                    sentir como en casa.
+                </p>
+
+                <div class="hero-buttons">
+
+                   <a
+                        href="#menu"
+                        class="primary-button"
+                        id="publicHeroPrimaryButton"
+                    >
+                        Ver nuestro menú
+                    </a>
+
+                    <a
+                        href="#contacto"
+                        class="secondary-button"
+                        id="publicHeroSecondaryButton"
+                    >
+                        Contáctanos
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==============================
+             MENÚ
+        =============================== -->
+
+        <section id="menu" class="menu-section">
+
+            <div class="section-heading">
+
+               <p
+                    id="publicMenuSubtitle"
+                    class="section-subtitle"
+                >
+                    DESCUBRE NUESTROS SABORES
+             </p>
+
+                <h2 id="publicMenuTitle">
+                    Nuestro menú
+                </h2>
+
+                <p id="publicMenuDescription">
+                    Elige tu plato favorito y disfruta
+                    de una experiencia llena de sabor.
+                </p>
+            </div>
+
+<div class="category-buttons">
+
+    <button class="category-button active" data-category="Todos">
+        Todos
+    </button>
+
+    <button class="category-button" data-category="Entradas">
+        🍽️ Entradas
+    </button>
+
+    <button class="category-button" data-category="Platos principales">
+        🍛 Platos principales
+    </button>
+
+    <button class="category-button" data-category="Bebidas">
+        🥤 Bebidas
+    </button>
+
+    <button class="category-button" data-category="Postres">
+        🍰 Postres
+    </button>
+
+</div>
+
+            <div id="products"></div>
+
+        </section>
+
+
+       <!-- ==============================
+     NOSOTROS
+============================== -->
+
+<section id="nosotros" class="about-section">
+
+    <div class="about-content">
+
+        <p
+            id="publicAboutSubtitle"
+            class="section-subtitle"
+        >
+            CONÓCENOS
+        </p>
+
+        <h2 id="publicAboutTitle">
+            Sobre nosotros
+        </h2>
+
+        <p id="publicAboutText">
+            En Casa Sabor creemos que una buena comida
+            no solo alimenta, también crea momentos.
+        </p>
+
+        <p id="publicAboutText2">
+            Preparamos cada plato con dedicación,
+            buscando ofrecerte ese delicioso sabor
+            casero que siempre quieres volver a disfrutar.
+        </p>
+
+    </div>
+
+</section>
+
+
+        <!-- ==============================
+             CONTACTO
+        =============================== -->
+
+        <section id="contacto" class="contact-section">
+
+            <div class="section-heading">
+
+                <p
+                 id="publicContactSubtitle"
+                    class="section-subtitle"
+                >
+                    ESTAMOS PARA TI
+                </p>
+
+                <h2 id="publicContactTitle">
+                    Contáctanos
+                </h2>
+
+            </div>
+
+            <div class="contact-container">
+
+                <div class="contact-card">
+
+                    <div class="contact-icon">📍</div>
+
+                    <h3>Ubicación</h3>
+
+                    <p id="publicRestaurantAddress">
+                        Dirección de Casa Sabor
+                    </p>
+
+                </div>
+
+
+                <div class="contact-card">
+
+                    <div class="contact-icon">📞</div>
+
+                    <h3>Teléfono</h3>
+
+                    <p id="publicRestaurantPhone">
+                        Número de contacto
+                    </p>
+
+                </div>
+
+
+                <div class="contact-card">
+
+                    <div class="contact-icon">📱</div>
+
+                    <h3>WhatsApp</h3>
+
+
+                    <a
+                        href="#"
+                        id="publicRestaurantWhatsapp"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        WhatsApp
+                    </a>
+
+                </div>
+
+
+                <div class="contact-card">
+
+    <div class="contact-icon">🕐</div>
+
+    <h3>Horario</h3>
+
+    <p id="publicRestaurantHours">
+        Horario de atención
+    </p>
+
+</div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==============================
+         PIE DE PÁGINA
+    =============================== -->
+
+    <footer>
+
+        <div class="footer-content">
+
+            <h2>🍽️ Casa Sabor</h2>
+
+            <p>
+                Sabor casero, hecho con amor.
+            </p>
+
+            <p class="copyright">
+                © 2026 Casa Sabor. Todos los derechos reservados.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

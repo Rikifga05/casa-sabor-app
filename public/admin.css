@@ -1,0 +1,1768 @@
+/* ========================================
+   CASA SABOR - PANEL DE ADMINISTRACIÓN
+   Versión mejorada: misma estructura y
+   clases originales, con una paleta más
+   coherente con la marca y más pulida.
+======================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Neutros cálidos (coherentes con el sitio público) en vez de grises fríos genéricos */
+    --admin-bg:      #f4f1ec;
+    --admin-surface: #ffffff;
+    --admin-border:  #e4ddd3;
+
+    --admin-ink:      #201510;
+    --admin-ink-soft: #6b5c51;
+
+    --admin-dark:       #1d130e;  /* header / nav, en vez de #222 plano */
+    --admin-dark-hover: #2b1e17;
+
+    /* Acento de marca (mismo tono que el sitio público, para coherencia visual) */
+    --brand-primary:      #c1440e;
+    --brand-primary-dark: #96350a;
+
+    /* Colores funcionales de acción — se conservan reconocibles pero con tono más moderno */
+    --action-edit:       #2563eb;
+    --action-edit-dark:  #1d4ed8;
+
+    --action-delete:      #dc2626;
+    --action-delete-dark: #b91c1c;
+
+    --action-save:      #15803d;
+    --action-save-dark: #0f5c2c;
+
+    --action-neutral:      #736357;
+    --action-neutral-dark: #5c4f45;
+
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+
+    /* Versión discreta de la esquina cortada del sitio público, para
+       que el panel se sienta parte de la misma marca sin perder su
+       carácter funcional. */
+    --radius-cut: 16px 6px 16px 6px;
+
+    --shadow-sm: 0 3px 12px rgba(32, 21, 16, 0.08);
+    --shadow-md: 0 8px 20px rgba(32, 21, 16, 0.14);
+
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::selection {
+    background: var(--brand-primary);
+    color: white;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: 'Work Sans', Arial, Helvetica, sans-serif;
+    background: var(--admin-bg);
+    color: var(--admin-ink);
+}
+
+/* Accesibilidad: foco visible consistente */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+    }
+}
+
+/* ========================================
+   ENCABEZADO
+======================================== */
+
+header {
+    background: var(--admin-dark);
+    color: white;
+    padding: 20px 30px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+#logoutButton {
+    background: var(--action-delete);
+    color: white;
+    border: none;
+
+    padding: 10px 18px;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    transition: background 0.2s ease,
+                transform 0.2s ease;
+}
+
+#logoutButton:hover {
+    background: var(--action-delete-dark);
+    transform: translateY(-1px);
+}
+
+/* ========================================
+   CONTENEDOR PRINCIPAL
+======================================== */
+
+main {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* ========================================
+   NAVEGACIÓN DEL ADMINISTRADOR
+======================================== */
+
+.admin-navigation {
+    display: flex;
+    gap: 10px;
+
+    margin-bottom: 25px;
+
+    position: sticky;
+    top: 10px;
+
+    z-index: 100;
+
+    padding: 5px;
+
+    background: var(--admin-bg);
+}
+
+.admin-nav-button {
+    position: relative;
+
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+
+    text-align: center;
+    text-decoration: none;
+
+    border: none;
+
+    background: var(--admin-dark);
+    color: white;
+
+    padding: 12px 16px;
+
+    border-radius: var(--radius-lg);
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    box-shadow: var(--shadow-sm);
+
+    transition: background 0.2s ease,
+                transform 0.2s var(--ease),
+                box-shadow 0.2s var(--ease);
+}
+
+.admin-nav-button::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    bottom: 0;
+
+    width: 0;
+    height: 3px;
+
+    background: var(--brand-primary);
+
+    transition: width 0.25s var(--ease);
+}
+
+.admin-nav-button:hover {
+    background: var(--admin-dark-hover);
+
+    transform: translateY(-1px);
+
+    box-shadow: var(--shadow-md);
+}
+
+.admin-nav-button:hover::after {
+    width: 100%;
+}
+
+/* ========================================
+   FORMULARIOS
+======================================== */
+
+.form-container {
+    background: var(--admin-surface);
+
+    padding: 25px;
+
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-sm);
+
+    margin-bottom: 25px;
+}
+
+.form-container h2 {
+    margin-top: 0;
+    margin-bottom: 22px;
+
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-weight: 700;
+    font-size: 14px;
+
+    color: var(--admin-ink-soft);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid var(--admin-border);
+
+    border-radius: var(--radius-sm);
+
+    font-size: 14px;
+
+    font-family: inherit;
+
+    background: var(--admin-surface);
+    color: var(--admin-ink);
+
+    transition: border-color 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+
+    border-color: var(--brand-primary);
+
+    box-shadow:
+        0 0 0 3px rgba(193, 68, 14, 0.10);
+}
+
+.form-group textarea {
+    min-height: 90px;
+
+    resize: vertical;
+}
+
+.form-group input[type="file"] {
+    padding: 10px;
+
+    background: var(--admin-bg);
+
+    cursor: pointer;
+}
+
+/* ========================================
+   BOTÓN CREAR PRODUCTO
+======================================== */
+
+#productForm button {
+    background: var(--action-save);
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 20px;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+#productForm button:hover {
+    background: var(--action-save-dark);
+
+    transform: translateY(-1px);
+}
+
+/* ========================================
+   MENSAJE GENERAL
+======================================== */
+
+#message {
+    font-weight: 700;
+
+    margin: 15px 0;
+}
+
+/* ========================================
+   LISTA / TARJETAS DE PRODUCTOS
+======================================== */
+
+#productList {
+    width: 100%;
+}
+
+.admin-products-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 20px;
+
+    margin-top: 20px;
+}
+
+.product-card {
+    width: 100%;
+    min-width: 0;
+
+    background: var(--admin-surface);
+
+    padding: 0 0 20px 0;
+
+    border-radius: var(--radius-cut);
+
+    overflow: hidden;
+
+    box-shadow: var(--shadow-sm);
+
+    transition:
+        transform 0.25s var(--ease),
+        box-shadow 0.25s var(--ease);
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+
+    box-shadow: var(--shadow-md);
+}
+
+.product-image {
+    width: 100%;
+
+    height: 200px;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+.product-card h3,
+.product-card p {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.product-card h3 {
+    margin-top: 16px;
+
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.product-card p {
+    color: var(--admin-ink-soft);
+
+    line-height: 1.5;
+}
+
+.product-price {
+    font-size: 20px;
+
+    font-weight: 700;
+
+    color: var(--brand-primary-dark);
+
+    margin: 10px 20px;
+}
+
+/* ========================================
+   BOTONES DE PRODUCTO
+======================================== */
+
+.admin-products-grid .product-card button {
+    margin-left: 20px;
+}
+
+.edit-button,
+.delete-button,
+.availability-button {
+    border: none;
+
+    padding: 9px 14px;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    color: white;
+
+    font-weight: 700;
+
+    margin-right: 5px;
+    margin-top: 5px;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.edit-button:hover,
+.delete-button:hover,
+.availability-button:hover {
+    transform: translateY(-1px);
+}
+
+.edit-button {
+    background: var(--action-edit);
+}
+
+.edit-button:hover {
+    background: var(--action-edit-dark);
+}
+
+.delete-button {
+    background: var(--action-delete);
+}
+
+.delete-button:hover {
+    background: var(--action-delete-dark);
+}
+
+.availability-button {
+    background: var(--action-neutral);
+}
+
+.availability-button:hover {
+    background: var(--action-neutral-dark);
+}
+
+/* ========================================
+   VISTA PREVIA DE IMAGEN
+======================================== */
+
+.image-preview {
+    width: 200px;
+    height: 150px;
+
+    object-fit: cover;
+
+    border-radius: var(--radius-sm);
+
+    margin-top: 12px;
+
+    display: block;
+
+    cursor: pointer;
+}
+
+/* ========================================
+   MODAL DE IMAGEN
+======================================== */
+
+.image-modal {
+    display: none;
+
+    position: fixed;
+
+    z-index: 9999;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(15, 10, 7, 0.82);
+
+    justify-content: center;
+    align-items: center;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90%;
+
+    object-fit: contain;
+
+    border-radius: var(--radius-sm);
+}
+
+/* ========================================
+   FORMULARIO DE EDICIÓN
+======================================== */
+
+.edit-form {
+    background: var(--admin-surface);
+
+    width: 90%;
+    max-width: 500px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    padding: 25px;
+
+    border-radius: var(--radius-lg);
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand-primary) transparent;
+}
+
+.edit-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.edit-form::-webkit-scrollbar-thumb {
+    background: #e8c9b8;
+
+    border-radius: 999px;
+}
+
+.edit-form h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+
+    font-weight: 600;
+}
+
+.edit-form label {
+    display: block;
+
+    margin-top: 12px;
+    margin-bottom: 6px;
+
+    font-weight: 700;
+
+    color: var(--admin-ink-soft);
+}
+
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
+    width: 100%;
+
+    padding: 10px;
+
+    border: 1px solid var(--admin-border);
+
+    border-radius: var(--radius-sm);
+
+    font-family: inherit;
+
+    background: var(--admin-surface);
+    color: var(--admin-ink);
+}
+
+.edit-form input:focus,
+.edit-form textarea:focus,
+.edit-form select:focus {
+    outline: none;
+
+    border-color: var(--brand-primary);
+
+    box-shadow:
+        0 0 0 3px rgba(193, 68, 14, 0.10);
+}
+
+.edit-form textarea {
+    min-height: 80px;
+
+    resize: vertical;
+}
+
+.edit-buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+.edit-buttons button {
+    flex: 1;
+
+    padding: 10px;
+
+    border: none;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    font-weight: 700;
+}
+
+/* ========================================
+   PEDIDOS
+======================================== */
+
+.orders-section {
+    margin-top: 15px;
+}
+
+.orders-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+}
+
+.orders-header h2 {
+    margin: 0;
+
+    font-weight: 600;
+}
+
+.pending-orders {
+    background: #fdf0d5;
+
+    color: #8a5a09;
+
+    padding: 10px 16px;
+
+    border-radius: var(--radius-sm);
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+#pendingOrdersCount {
+    margin-left: 5px;
+}
+
+/* ========================================
+   BUSCADOR DE PEDIDOS
+======================================== */
+
+.order-search {
+    margin-bottom: 20px;
+}
+
+.order-search input {
+    width: 100%;
+
+    padding: 12px 15px;
+
+    border: 1px solid var(--admin-border);
+
+    border-radius: var(--radius-sm);
+
+    font-size: 15px;
+
+    font-family: inherit;
+
+    background: var(--admin-surface);
+    color: var(--admin-ink);
+}
+
+.order-search input:focus {
+    outline: none;
+
+    border-color: var(--brand-primary);
+
+    box-shadow:
+        0 0 0 3px rgba(193, 68, 14, 0.10);
+}
+
+/* ========================================
+   RESUMEN DE PEDIDOS
+======================================== */
+
+.order-summary {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin: 20px 0;
+}
+
+.summary-card {
+    background: var(--admin-surface);
+
+    padding: 18px;
+
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    font-weight: 700;
+
+    text-align: center;
+}
+
+.summary-card strong {
+    font-size: 26px;
+
+    color: var(--brand-primary-dark);
+}
+
+/* ========================================
+   FILTROS DE PEDIDOS
+======================================== */
+
+.order-filters {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-bottom: 25px;
+}
+
+.order-filter {
+    border: none;
+
+    background: #ece6de;
+
+    color: var(--admin-ink);
+
+    padding: 10px 15px;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    font-weight: 700;
+
+    font-family: inherit;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.order-filter:hover {
+    background: #ddd3c6;
+
+    transform: translateY(-1px);
+}
+
+.order-filter.active {
+    background: var(--admin-dark);
+
+    color: white;
+}
+
+/* ========================================
+   CUADRÍCULA DE PEDIDOS
+======================================== */
+
+#orderList {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+/* ========================================
+   TARJETAS DE PEDIDOS
+======================================== */
+
+.order-card {
+    background: var(--admin-surface);
+
+    padding: 18px;
+
+    border-radius: var(--radius-cut);
+
+    box-shadow: var(--shadow-sm);
+
+    border-left: 5px solid #f0ad4e;
+
+    transition:
+        transform 0.25s var(--ease),
+        box-shadow 0.25s var(--ease);
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+}
+
+.order-card h3 {
+    margin-top: 0;
+
+    margin-bottom: 12px;
+
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.order-card p {
+    margin: 7px 0;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    color: var(--admin-ink-soft);
+}
+
+/* ========================================
+   COLORES SEGÚN ESTADO
+======================================== */
+
+.order-card.status-pendiente {
+    border-left-color: #f0ad4e;
+}
+
+.order-card.status-en-preparacion {
+    border-left-color: #ff8c00;
+}
+
+.order-card.status-listo {
+    border-left-color: #28a745;
+}
+
+.order-card.status-entregado {
+    border-left-color: #2563eb;
+}
+
+/* ========================================
+   ESTADO DEL PEDIDO
+======================================== */
+
+.order-status-badge {
+    position: relative;
+
+    display: inline-block;
+
+    padding: 6px 14px 6px 28px;
+
+    margin-bottom: 15px;
+
+    border-radius: 20px;
+
+    font-weight: 700;
+
+    font-size: 14px;
+}
+
+.order-status-badge::before {
+    content: "";
+
+    position: absolute;
+
+    left: 12px;
+    top: 50%;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+
+    transform: translateY(-50%);
+}
+
+.order-status-badge.status-pendiente {
+    background: #fdf0d5;
+    color: #8a5a09;
+}
+
+.order-status-badge.status-en-preparacion {
+    background: #ffe5cc;
+    color: #a05200;
+}
+
+.order-status-badge.status-listo {
+    background: #d9f0dd;
+    color: #15653a;
+}
+
+.order-status-badge.status-entregado {
+    background: #dde8fc;
+    color: #1d4ed8;
+}
+
+/* ========================================
+   CAMBIO DE ESTADO
+======================================== */
+
+.order-status {
+    margin-top: 15px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid var(--admin-border);
+}
+
+.order-status select {
+    margin-left: 8px;
+
+    padding: 8px 10px;
+
+    border-radius: var(--radius-sm);
+
+    border: 1px solid var(--admin-border);
+
+    font-family: inherit;
+
+    cursor: pointer;
+}
+
+/* ========================================
+   PRODUCTOS DEL PEDIDO
+======================================== */
+
+.order-items {
+    margin-top: 20px;
+
+    padding: 15px;
+
+    background: var(--admin-bg);
+
+    border-radius: var(--radius-sm);
+}
+
+.order-items h4 {
+    margin-top: 0;
+
+    margin-bottom: 12px;
+}
+
+.order-item {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-item-info {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.delete-order-button {
+    margin-top: 20px;
+
+    padding: 9px 14px;
+
+    background: var(--action-delete);
+
+    color: white;
+
+    border: none;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.delete-order-button:hover {
+    background: var(--action-delete-dark);
+
+    transform: translateY(-1px);
+}
+
+/* ========================================
+   FILTROS DE CATEGORÍAS
+======================================== */
+
+.admin-category-filters {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin: 20px 0;
+}
+
+.admin-category-filter {
+    border: none;
+
+    background: #ece6de;
+
+    color: var(--admin-ink);
+
+    padding: 10px 16px;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    font-family: inherit;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-category-filter:hover {
+    background: #ddd3c6;
+
+    transform: translateY(-1px);
+}
+
+.admin-category-filter.active {
+    background: var(--admin-dark);
+
+    color: white;
+}
+
+/* ========================================
+   RESUMEN DE PRODUCTOS
+======================================== */
+
+.product-summary {
+    display: flex;
+
+    gap: 12px;
+
+    margin: 15px 0 20px 0;
+}
+
+.product-summary-card {
+    width: 150px;
+
+    padding: 10px 12px;
+
+    background: var(--admin-surface);
+
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    font-weight: 700;
+
+    font-size: 13px;
+}
+
+.product-summary-card strong {
+    font-size: 20px;
+
+    color: var(--brand-primary-dark);
+}
+
+/* ========================================
+   CLIENTES
+======================================== */
+
+.client-search {
+    margin-bottom: 20px;
+}
+
+.client-search input {
+    width: 100%;
+
+    padding: 12px 15px;
+
+    border: 1px solid var(--admin-border);
+
+    border-radius: var(--radius-sm);
+
+    font-size: 15px;
+
+    font-family: inherit;
+
+    background: var(--admin-surface);
+    color: var(--admin-ink);
+}
+
+.client-search input:focus {
+    outline: none;
+
+    border-color: var(--brand-primary);
+
+    box-shadow:
+        0 0 0 3px rgba(193, 68, 14, 0.10);
+}
+
+.client-list {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 15px;
+
+    margin-top: 20px;
+}
+
+.client-card {
+    background: var(--admin-surface);
+
+    padding: 18px;
+
+    border-radius: var(--radius-cut);
+
+    box-shadow: var(--shadow-sm);
+
+    transition:
+        transform 0.25s var(--ease),
+        box-shadow 0.25s var(--ease);
+}
+
+.client-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+}
+
+.client-card h3 {
+    margin-top: 0;
+
+    margin-bottom: 14px;
+
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.client-card p {
+    margin: 8px 0;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    color: var(--admin-ink-soft);
+}
+
+.client-card strong {
+    font-weight: 700;
+
+    color: var(--admin-ink);
+}
+
+.no-clients {
+    background: var(--admin-surface);
+
+    padding: 28px 20px;
+
+    border: 2px dashed var(--admin-border);
+
+    border-radius: var(--radius-md);
+
+    text-align: center;
+
+    color: var(--admin-ink-soft);
+}
+
+/* ========================================
+   CONFIGURACIÓN
+======================================== */
+
+.configuration-options {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 18px;
+
+    margin-top: 25px;
+}
+
+.configuration-option {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 90px;
+
+    padding: 18px;
+
+    background: var(--admin-surface);
+
+    border-radius: var(--radius-cut);
+
+    box-shadow: var(--shadow-sm);
+
+    text-decoration: none;
+
+    color: var(--admin-ink);
+
+    font-size: 16px;
+    font-weight: 700;
+
+    transition:
+        transform 0.25s var(--ease),
+        box-shadow 0.25s var(--ease);
+}
+
+.configuration-option:hover {
+    transform: translateY(-3px);
+
+    box-shadow: var(--shadow-md);
+}
+
+/* ========================================
+   EDITAR PÁGINA DEL RESTAURANTE
+======================================== */
+
+#restaurante .form-container {
+    margin-bottom: 20px;
+
+    padding: 22px;
+
+    border-radius: var(--radius-lg);
+
+    background: var(--admin-surface);
+
+    box-shadow: var(--shadow-sm);
+}
+
+#restaurante .form-container h3 {
+    margin-top: 0;
+
+    margin-bottom: 20px;
+
+    font-size: 18px;
+    font-weight: 600;
+}
+
+#restaurante .form-group {
+    margin-bottom: 16px;
+}
+
+#restaurante label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-weight: 700;
+
+    font-size: 14px;
+
+    color: var(--admin-ink-soft);
+}
+
+#restaurante input,
+#restaurante textarea {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid var(--admin-border);
+
+    border-radius: var(--radius-sm);
+
+    font-size: 14px;
+
+    font-family: inherit;
+
+    background: var(--admin-surface);
+    color: var(--admin-ink);
+}
+
+#restaurante textarea {
+    min-height: 90px;
+
+    resize: vertical;
+}
+
+#restaurante input:focus,
+#restaurante textarea:focus {
+    outline: none;
+
+    border-color: var(--brand-primary);
+}
+
+/* ========================================
+   BOTONES DE GUARDAR SECCIÓN
+======================================== */
+
+.save-section-button {
+    width: 100%;
+
+    margin-top: 15px;
+
+    padding: 12px 16px;
+
+    border: none;
+
+    border-radius: var(--radius-sm);
+
+    background: var(--admin-dark);
+
+    color: white;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.save-section-button:hover {
+    background: var(--admin-dark-hover);
+
+    transform: translateY(-1px);
+}
+
+.section-message {
+    margin: 10px 0 0;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    text-align: center;
+}
+
+/* ========================================
+   MENSAJE SIN PRODUCTOS
+======================================== */
+
+.no-products {
+    background: var(--admin-surface);
+
+    padding: 28px 20px;
+
+    border: 2px dashed var(--admin-border);
+
+    border-radius: var(--radius-md);
+
+    text-align: center;
+
+    color: var(--admin-ink-soft);
+}
+
+/* ========================================
+   AJUSTES DE DESPLAZAMIENTO
+======================================== */
+
+#clientes {
+    scroll-margin-top: 140px;
+}
+
+#cuenta {
+    scroll-margin-top: 180px;
+}
+
+#restaurante {
+    scroll-margin-top: 140px;
+}
+
+/* ========================================
+   TABLET
+======================================== */
+
+@media (max-width: 900px) {
+
+    .admin-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    #orderList {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .client-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .order-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+/* ========================================
+   CELULAR
+======================================== */
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 15px;
+    }
+
+    header h1 {
+        font-size: 21px;
+    }
+
+    #logoutButton {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    main {
+        margin: 20px auto;
+        padding: 0 12px;
+    }
+
+    /* NAVEGACIÓN */
+
+    .admin-navigation {
+        position: sticky;
+
+        top: 5px;
+
+        gap: 5px;
+
+        padding: 5px;
+    }
+
+    .admin-nav-button {
+        min-height: 40px;
+
+        padding: 9px 5px;
+
+        font-size: 12px;
+
+        white-space: nowrap;
+    }
+
+    /* PEDIDOS */
+
+    .orders-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 10px;
+    }
+
+    .pending-orders {
+        width: 100%;
+
+        text-align: center;
+    }
+
+    /* RESUMEN */
+
+    .order-summary {
+        grid-template-columns: repeat(3, 1fr);
+
+        gap: 7px;
+    }
+
+    .summary-card {
+        padding: 10px 6px;
+
+        gap: 5px;
+
+        font-size: 12px;
+
+        text-align: center;
+    }
+
+    .summary-card strong {
+        font-size: 19px;
+    }
+
+    /* FILTROS DE PEDIDOS */
+
+    .order-filters {
+        display: grid;
+
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+    }
+
+    .order-filter {
+        width: 100%;
+
+        padding: 10px 8px;
+    }
+
+    /* PEDIDOS */
+
+    #orderList {
+        grid-template-columns: 1fr;
+
+        gap: 15px;
+    }
+
+    .order-card {
+        padding: 14px;
+    }
+
+    .order-card h3 {
+        font-size: 16px;
+    }
+
+    .order-card p {
+        font-size: 13px;
+    }
+
+    .order-item {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .order-status select {
+        margin-left: 0;
+
+        margin-top: 8px;
+
+        width: 100%;
+    }
+
+    /* PRODUCTOS */
+
+    .admin-category-filters {
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 8px;
+    }
+
+    .admin-category-filter {
+        width: 100%;
+
+        padding: 10px 8px;
+
+        font-size: 12px;
+    }
+
+    .admin-products-grid {
+        grid-template-columns: 1fr;
+
+        gap: 15px;
+    }
+
+    .product-image {
+        height: 190px;
+    }
+
+    .product-card h3 {
+        font-size: 18px;
+    }
+
+    /* RESUMEN DE PRODUCTOS */
+
+    .product-summary {
+        gap: 8px;
+    }
+
+    .product-summary-card {
+        width: 135px;
+
+        padding: 9px 10px;
+
+        font-size: 12px;
+    }
+
+    .product-summary-card strong {
+        font-size: 19px;
+    }
+
+    /* CLIENTES */
+
+    .client-list {
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+    .client-card {
+        padding: 15px;
+    }
+
+    /* CONFIGURACIÓN */
+
+    .configuration-options {
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+    .configuration-option {
+        min-height: 60px;
+
+        font-size: 15px;
+    }
+
+    /* EDITAR PÁGINA */
+
+    #restaurante .form-container {
+        padding: 16px;
+
+        margin-bottom: 15px;
+    }
+
+    #restaurante .form-container h3 {
+        font-size: 16px;
+    }
+
+    #restaurante input,
+    #restaurante textarea {
+        font-size: 13px;
+    }
+
+    /* FORMULARIO */
+
+    .form-container {
+        padding: 18px;
+    }
+
+    .form-container h2 {
+        font-size: 20px;
+    }
+
+    /* IMAGEN */
+
+    .image-preview {
+        width: 180px;
+
+        height: 135px;
+    }
+
+}
+
+/* ========================================
+   CELULAR PEQUEÑO
+======================================== */
+
+@media (max-width: 500px) {
+
+    .order-summary {
+        grid-template-columns: repeat(3, 1fr);
+
+        gap: 6px;
+    }
+
+    .summary-card {
+        padding: 9px 4px;
+
+        font-size: 11px;
+    }
+
+    .summary-card strong {
+        font-size: 17px;
+    }
+
+    .product-summary-card {
+        width: 125px;
+    }
+
+}
+
+/* ========================================
+   CELULAR MUY PEQUEÑO
+======================================== */
+
+@media (max-width: 380px) {
+
+    .admin-nav-button {
+        font-size: 11px;
+
+        padding: 8px 3px;
+    }
+
+    .summary-card {
+        font-size: 10px;
+
+        padding: 8px 3px;
+    }
+
+    .summary-card strong {
+        font-size: 16px;
+    }
+
+}
