@@ -1,5 +1,6 @@
 const express = require("express");
 require("dotenv").config();
+
 const db = require("./database/database");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
@@ -7,16 +8,21 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+
+// ========================================
+// CONFIGURACIÓN DE MULTER
+// ========================================
+
 const storage = multer.diskStorage({
 
     destination: (req, file, cb) => {
 
-    cb(
-        null,
-        path.join(__dirname, "public", "images")
-    );
+        cb(
+            null,
+            path.join(__dirname, "public", "images")
+        );
 
-},
+    },
 
     filename: (req, file, cb) => {
 
@@ -24,7 +30,11 @@ const storage = multer.diskStorage({
             file.originalname.split(".").pop();
 
         const filename =
-            Date.now() + "-" + Math.round(Math.random() * 1E9) + "." + extension;
+            Date.now() +
+            "-" +
+            Math.round(Math.random() * 1E9) +
+            "." +
+            extension;
 
         cb(null, filename);
 
@@ -32,21 +42,33 @@ const storage = multer.diskStorage({
 
 });
 
-const imagesPath = path.join(__dirname, "public", "images");
+const imagesPath =
+    path.join(__dirname, "public", "images");
 
 if (!fs.existsSync(imagesPath)) {
-    fs.mkdirSync(imagesPath, { recursive: true });
+
+    fs.mkdirSync(
+        imagesPath,
+        { recursive: true }
+    );
+
 }
 
 const upload = multer({
     storage: storage
 });
 
+
+// ========================================
+// CREAR APLICACIÓN
+// ========================================
+
 const app = express();
 
 app.set("trust proxy", 1);
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+    process.env.PORT || 3000;
 
 
 // ========================================
@@ -54,6 +76,36 @@ const PORT = process.env.PORT || 3000;
 // ========================================
 
 app.use(express.json());
+
+
+// ========================================
+// CONFIGURAR SESIONES
+// ========================================
+
+app.use(session({
+
+    secret: process.env.SESSION_SECRET,
+
+    resave: false,
+
+    saveUninitialized: false,
+
+    cookie: {
+
+        httpOnly: true,
+
+        secure:
+            process.env.NODE_ENV === "production",
+
+        sameSite: "lax",
+
+        maxAge:
+            1000 * 60 * 60
+
+    }
+
+}));
+
 
 // ========================================
 // PROTEGER RUTAS DE ADMINISTRACIÓN
@@ -64,29 +116,16 @@ function requireLogin(req, res, next) {
     if (!req.session.user) {
 
         return res.status(401).json({
+
             error: "No autorizado"
+
         });
 
     }
 
     next();
-}
 
-// ========================================
-// CONFIGURAR SESIONES
-// ========================================
-
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-   cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 1000 * 60 * 60
 }
-}));
 
 
 // ========================================
@@ -112,338 +151,379 @@ app.get("/admin.html", (req, res, next) => {
 
 app.use(express.static("public"));
 
-app.use(
-    "/images",
-    express.static(
-        path.join(__dirname, "data", "images")
-    )
-);
+
+// ========================================
+// FUNCIONES AUXILIARES DE TURSO
+// ========================================
+
+async function getOne(sql, args = []) {
+
+    const result =
+        await db.execute({
+            sql: sql,
+            args: args
+        });
+
+    return result.rows[0] || null;
+
+}
+
+
+async function getAll(sql, args = []) {
+
+    const result =
+        await db.execute({
+            sql: sql,
+            args: args
+        });
+
+    return result.rows;
+
+}
+
+
+async function execute(sql, args = []) {
+
+    return await db.execute({
+
+        sql: sql,
+
+        args: args
+
+    });
+
+}
 
 
 // ========================================
-// CREAR TABLA DE PRODUCTOS
+// INICIALIZAR BASE DE DATOS
 // ========================================
 
-db.exec(`
-    CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        description TEXT,
-        price REAL NOT NULL,
-        image TEXT,
-        available INTEGER DEFAULT 1
-    )
-`);
+async function initializeDatabase() {
 
-// Agregar categoría a los productos si todavía no existe
-try {
-    db.exec(`
-        ALTER TABLE products
-        ADD COLUMN category TEXT DEFAULT 'Platos principales'
+    // ========================================
+    // TABLA DE PRODUCTOS
+    // ========================================
+
+    await execute(`
+        CREATE TABLE IF NOT EXISTS products (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            name TEXT NOT NULL,
+
+            description TEXT,
+
+            price REAL NOT NULL,
+
+            image TEXT,
+
+            available INTEGER DEFAULT 1,
+
+            category TEXT DEFAULT 'Platos principales'
+
+        )
     `);
-} catch (error) {
-    // La columna ya existe, no hacemos nada
-}
-
-// ========================================
-// CREAR TABLAS DE PEDIDOS
-// ========================================
-
-db.exec(`
-    CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_name TEXT NOT NULL,
-        customer_phone TEXT NOT NULL,
-        customer_address TEXT NOT NULL,
-        total REAL NOT NULL,
-        status TEXT DEFAULT 'Pendiente',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
-
-db.exec(`
-    CREATE TABLE IF NOT EXISTS order_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_id INTEGER NOT NULL,
-        product_id INTEGER NOT NULL,
-        product_name TEXT NOT NULL,
-        quantity INTEGER NOT NULL,
-        price REAL NOT NULL,
-        subtotal REAL NOT NULL,
-        FOREIGN KEY (order_id) REFERENCES orders(id)
-    )
-`);
 
 
-// ========================================
-// CREAR TABLA DE USUARIOS
-// ========================================
+    // ========================================
+    // TABLA DE PEDIDOS
+    // ========================================
 
-db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
-    )
-`);
+    await execute(`
+        CREATE TABLE IF NOT EXISTS orders (
 
-// ========================================
-// CREAR TABLA DE CONFIGURACIÓN DEL RESTAURANTE
-// ========================================
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-db.exec(`
-    CREATE TABLE IF NOT EXISTS restaurant_settings (
-        id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
-        main_title TEXT DEFAULT '',
-        main_subtitle TEXT DEFAULT '',
-        description TEXT DEFAULT '',
-        phone TEXT DEFAULT '',
-        whatsapp TEXT DEFAULT '',
-        address TEXT DEFAULT '',
-        hours TEXT DEFAULT '',
-        button_text TEXT DEFAULT '',
-        secondary_button_text TEXT DEFAULT '',
-        menu_subtitle TEXT DEFAULT '',
-        menu_title TEXT DEFAULT '',
-        menu_description TEXT DEFAULT '',
-        about_subtitle TEXT DEFAULT '',
-        about_title TEXT DEFAULT '',
-        about_text TEXT DEFAULT '',
-        about_text2 TEXT DEFAULT '',
-        contact_subtitle TEXT DEFAULT '',
-        contact_title TEXT DEFAULT '',
-        contact_text TEXT DEFAULT ''
-    )
-`);
+            customer_name TEXT NOT NULL,
 
+            customer_phone TEXT NOT NULL,
 
-// ========================================
-// AGREGAR COLUMNAS A TABLAS EXISTENTES
-// ========================================
+            customer_address TEXT NOT NULL,
 
-const restaurantColumns = [
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN main_title TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN main_subtitle TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN description TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN phone TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN whatsapp TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN address TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN hours TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN button_text TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN secondary_button_text TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN menu_subtitle TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN menu_title TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN menu_description TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN about_subtitle TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN about_title TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN about_text TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN about_text2 TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN contact_subtitle TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN contact_title TEXT DEFAULT ''`
-    },
-    {
-        sql: `ALTER TABLE restaurant_settings ADD COLUMN contact_text TEXT DEFAULT ''`
-    }
-];
+            total REAL NOT NULL,
 
+            status TEXT DEFAULT 'Pendiente',
 
-restaurantColumns.forEach(column => {
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 
-    try {
-
-        db.exec(column.sql);
-
-    } catch (error) {
-
-        // La columna ya existe.
-        // No hacemos nada.
-
-    }
-
-});
-
-
-// ========================================
-// CREAR CONFIGURACIÓN INICIAL
-// ========================================
-
-const restaurantSettings =
-    db.prepare(`
-        SELECT *
-        FROM restaurant_settings
-        WHERE id = 1
-    `).get();
-
-
-if (!restaurantSettings) {
-
-    db.prepare(`
-        INSERT INTO restaurant_settings
-        (
-            id,
-            name,
-            main_title,
-            main_subtitle,
-            description,
-            phone,
-            whatsapp,
-            address,
-            hours,
-            button_text,
-            secondary_button_text,
-            menu_subtitle,
-            menu_title,
-            menu_description,
-            about_subtitle,
-            about_title,
-            about_text,
-            about_text2,
-            contact_subtitle,
-            contact_title,
-            contact_text
         )
-        VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    `);
+
+
+    // ========================================
+    // PRODUCTOS DE LOS PEDIDOS
+    // ========================================
+
+    await execute(`
+        CREATE TABLE IF NOT EXISTS order_items (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            order_id INTEGER NOT NULL,
+
+            product_id INTEGER NOT NULL,
+
+            product_name TEXT NOT NULL,
+
+            quantity INTEGER NOT NULL,
+
+            price REAL NOT NULL,
+
+            subtotal REAL NOT NULL,
+
+            FOREIGN KEY (order_id)
+                REFERENCES orders(id)
+
         )
-    `).run(
+    `);
 
-        1,
 
-        "Casa Sabor",
+    // ========================================
+    // TABLA DE USUARIOS
+    // ========================================
 
-        "Sabor casero, hecho con amor",
+    await execute(`
+        CREATE TABLE IF NOT EXISTS users (
 
-        "BIENVENIDO A CASA SABOR",
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        "Disfruta platos preparados con dedicación, ingredientes frescos y ese sabor que te hace sentir como en casa.",
+            username TEXT UNIQUE NOT NULL,
 
-        "",
+            password TEXT NOT NULL
 
-        "",
+        )
+    `);
 
-        "",
 
-        "",
+    // ========================================
+    // CONFIGURACIÓN DEL RESTAURANTE
+    // ========================================
 
-        "Ver nuestro menú",
+    await execute(`
+        CREATE TABLE IF NOT EXISTS restaurant_settings (
 
-        "Contáctanos",
+            id INTEGER PRIMARY KEY,
 
-        "DESCUBRE NUESTROS SABORES",
+            name TEXT NOT NULL,
 
-        "Nuestro menú",
+            main_title TEXT DEFAULT '',
 
-        "Elige tu plato favorito y disfruta de una experiencia llena de sabor.",
+            main_subtitle TEXT DEFAULT '',
 
-        "CONÓCENOS",
+            description TEXT DEFAULT '',
 
-        "Sobre nosotros",
+            phone TEXT DEFAULT '',
 
-        "En Casa Sabor creemos que una buena comida no solo alimenta, también crea momentos.",
+            whatsapp TEXT DEFAULT '',
 
-        "Preparamos cada plato con dedicación, buscando ofrecerte ese delicioso sabor casero que siempre quieres volver a disfrutar.",
+            address TEXT DEFAULT '',
 
-        "ESTAMOS PARA TI",
+            hours TEXT DEFAULT '',
 
-        "Contáctanos",
+            button_text TEXT DEFAULT '',
 
-        ""
+            secondary_button_text TEXT DEFAULT '',
 
+            menu_subtitle TEXT DEFAULT '',
+
+            menu_title TEXT DEFAULT '',
+
+            menu_description TEXT DEFAULT '',
+
+            about_subtitle TEXT DEFAULT '',
+
+            about_title TEXT DEFAULT '',
+
+            about_text TEXT DEFAULT '',
+
+            about_text2 TEXT DEFAULT '',
+
+            contact_subtitle TEXT DEFAULT '',
+
+            contact_title TEXT DEFAULT '',
+
+            contact_text TEXT DEFAULT ''
+
+        )
+    `);
+
+
+    // ========================================
+    // CREAR CONFIGURACIÓN INICIAL
+    // ========================================
+
+    const restaurantSettings =
+        await getOne(`
+            SELECT *
+            FROM restaurant_settings
+            WHERE id = 1
+        `);
+
+
+    if (!restaurantSettings) {
+
+        await execute(`
+            INSERT INTO restaurant_settings
+            (
+                id,
+                name,
+                main_title,
+                main_subtitle,
+                description,
+                phone,
+                whatsapp,
+                address,
+                hours,
+                button_text,
+                secondary_button_text,
+                menu_subtitle,
+                menu_title,
+                menu_description,
+                about_subtitle,
+                about_title,
+                about_text,
+                about_text2,
+                contact_subtitle,
+                contact_title,
+                contact_text
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+        `, [
+
+            1,
+
+            "Casa Sabor",
+
+            "Sabor casero, hecho con amor",
+
+            "BIENVENIDO A CASA SABOR",
+
+            "Disfruta platos preparados con dedicación, ingredientes frescos y ese sabor que te hace sentir como en casa.",
+
+            "",
+
+            "",
+
+            "",
+
+            "",
+
+            "Ver nuestro menú",
+
+            "Contáctanos",
+
+            "DESCUBRE NUESTROS SABORES",
+
+            "Nuestro menú",
+
+            "Elige tu plato favorito y disfruta de una experiencia llena de sabor.",
+
+            "CONÓCENOS",
+
+            "Sobre nosotros",
+
+            "En Casa Sabor creemos que una buena comida no solo alimenta, también crea momentos.",
+
+            "Preparamos cada plato con dedicación, buscando ofrecerte ese delicioso sabor casero que siempre quieres volver a disfrutar.",
+
+            "ESTAMOS PARA TI",
+
+            "Contáctanos",
+
+            ""
+
+        ]);
+
+    }
+
+
+    // ========================================
+    // CREAR USUARIO ADMINISTRADOR
+    // ========================================
+
+    const userCount =
+        await getOne(`
+            SELECT COUNT(*) AS total
+            FROM users
+        `);
+
+
+    if (Number(userCount.total) === 0) {
+
+        const passwordHash =
+            await bcrypt.hash(
+                process.env.ADMIN_PASSWORD,
+                10
+            );
+
+
+        await execute(`
+            INSERT INTO users
+            (username, password)
+            VALUES (?, ?)
+        `, [
+
+            process.env.ADMIN_USERNAME,
+
+            passwordHash
+
+        ]);
+
+
+        console.log(
+            "Usuario administrador creado"
+        );
+
+    }
+
+
+    // ========================================
+    // CREAR PRODUCTO INICIAL
+    // ========================================
+
+    const productCount =
+        await getOne(`
+            SELECT COUNT(*) AS total
+            FROM products
+        `);
+
+
+    if (Number(productCount.total) === 0) {
+
+        await execute(`
+            INSERT INTO products
+            (name, description, price, category)
+            VALUES (?, ?, ?, ?)
+        `, [
+
+            "Hamburguesa Casa",
+
+            "Carne Angus, queso cheddar y salsa especial.",
+
+            18.90,
+
+            "Platos principales"
+
+        ]);
+
+
+        console.log(
+            "Producto inicial creado"
+        );
+
+    }
+
+
+    console.log(
+        "Base de datos Turso inicializada correctamente"
     );
 
 }
 
-// ========================================
-// CREAR USUARIO ADMINISTRADOR
-// ========================================
-
-const userCount = db
-    .prepare("SELECT COUNT(*) AS total FROM users")
-    .get();
-
-if (userCount.total === 0) {
-
-    const passwordHash = bcrypt.hashSync(
-        process.env.ADMIN_PASSWORD,
-        10
-    );
-
-    db.prepare(`
-        INSERT INTO users
-        (username, password)
-        VALUES (?, ?)
-    `).run(
-        process.env.ADMIN_USERNAME,
-        passwordHash
-    );
-
-    console.log("Usuario administrador creado");
-}
-
-// ========================================
-// CREAR PRODUCTO INICIAL
-// ========================================
-
-const productCount = db
-    .prepare("SELECT COUNT(*) AS total FROM products")
-    .get();
-
-if (productCount.total === 0) {
-
-    db.prepare(`
-        INSERT INTO products
-        (name, description, price, category)
-        VALUES (?, ?, ?, ?)
-    `).run(
-        "Hamburguesa Casa",
-        "Carne Angus, queso cheddar y salsa especial.",
-        18.90,
-        "Platos principales"
-    );
-
-    console.log("Producto inicial creado");
-}
-
-// ========================================
-// GET - OBTENER PRODUCTOS
-// ========================================
 
 // ========================================
 // POST - LOGIN
@@ -451,72 +531,100 @@ if (productCount.total === 0) {
 
 app.post("/api/login", async (req, res) => {
 
-    const {
-        username,
-        password
-    } = req.body;
+    try {
+
+        const {
+            username,
+            password
+        } = req.body;
 
 
-    // Comprobar que llegaron los datos
-    if (!username || !password) {
+        if (!username || !password) {
 
-        return res.status(400).json({
-            error: "Usuario y contraseña son obligatorios"
+            return res.status(400).json({
+
+                error:
+                    "Usuario y contraseña son obligatorios"
+
+            });
+
+        }
+
+
+        const user =
+            await getOne(`
+                SELECT *
+                FROM users
+                WHERE username = ?
+            `, [username]);
+
+
+        if (!user) {
+
+            return res.status(401).json({
+
+                error:
+                    "Usuario o contraseña incorrectos"
+
+            });
+
+        }
+
+
+        const passwordCorrect =
+            await bcrypt.compare(
+                password,
+                user.password
+            );
+
+
+        if (!passwordCorrect) {
+
+            return res.status(401).json({
+
+                error:
+                    "Usuario o contraseña incorrectos"
+
+            });
+
+        }
+
+
+        req.session.user = {
+
+            id: Number(user.id),
+
+            username: user.username
+
+        };
+
+
+        res.json({
+
+            message: "Login correcto",
+
+            username: user.username
+
         });
 
-    }
+    } catch (error) {
 
-
-    // Buscar usuario
-    const user = db
-        .prepare(`
-            SELECT *
-            FROM users
-            WHERE username = ?
-        `)
-        .get(username);
-
-
-    // Usuario inexistente
-    if (!user) {
-
-        return res.status(401).json({
-            error: "Usuario o contraseña incorrectos"
-        });
-
-    }
-
-
-    // Comprobar contraseña
-    const passwordCorrect =
-        await bcrypt.compare(
-            password,
-            user.password
+        console.error(
+            "Error en login:",
+            error
         );
 
+        res.status(500).json({
 
-    if (!passwordCorrect) {
+            error:
+                "Error interno del servidor"
 
-        return res.status(401).json({
-            error: "Usuario o contraseña incorrectos"
         });
 
     }
 
-
-    // Guardar usuario en la sesión
-req.session.user = {
-    id: user.id,
-    username: user.username
-};
-
-
-res.json({
-    message: "Login correcto",
-    username: user.username
 });
 
-});
 
 // ========================================
 // POST - CERRAR SESIÓN
@@ -529,13 +637,20 @@ app.post("/api/logout", (req, res) => {
         if (error) {
 
             return res.status(500).json({
-                error: "No se pudo cerrar la sesión"
+
+                error:
+                    "No se pudo cerrar la sesión"
+
             });
 
         }
 
+
         res.json({
-            message: "Sesión cerrada correctamente"
+
+            message:
+                "Sesión cerrada correctamente"
+
         });
 
     });
@@ -544,136 +659,168 @@ app.post("/api/logout", (req, res) => {
 
 
 // ========================================
-// PUT - CAMBIAR CONTRASEÑA DEL USUARIO
+// PUT - CAMBIAR CONTRASEÑA
 // ========================================
 
-app.put("/api/users/change-password", requireLogin, async (req, res) => {
+app.put(
+    "/api/users/change-password",
+    requireLogin,
+    async (req, res) => {
 
-    const {
-        currentPassword,
-        newPassword
-    } = req.body;
+        try {
+
+            const {
+                currentPassword,
+                newPassword
+            } = req.body;
 
 
-    // ========================================
-    // VALIDAR DATOS
-    // ========================================
+            if (!currentPassword || !newPassword) {
 
-    if (!currentPassword || !newPassword) {
+                return res.status(400).json({
 
-        return res.status(400).json({
-            error: "La contraseña actual y la nueva contraseña son obligatorias"
-        });
+                    error:
+                        "La contraseña actual y la nueva contraseña son obligatorias"
+
+                });
+
+            }
+
+
+            if (newPassword.length < 8) {
+
+                return res.status(400).json({
+
+                    error:
+                        "La nueva contraseña debe tener al menos 8 caracteres"
+
+                });
+
+            }
+
+
+            const user =
+                await getOne(`
+                    SELECT *
+                    FROM users
+                    WHERE id = ?
+                `, [
+                    req.session.user.id
+                ]);
+
+
+            if (!user) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Usuario no encontrado"
+
+                });
+
+            }
+
+
+            const passwordCorrect =
+                await bcrypt.compare(
+                    currentPassword,
+                    user.password
+                );
+
+
+            if (!passwordCorrect) {
+
+                return res.status(401).json({
+
+                    error:
+                        "La contraseña actual es incorrecta"
+
+                });
+
+            }
+
+
+            const newPasswordHash =
+                await bcrypt.hash(
+                    newPassword,
+                    10
+                );
+
+
+            await execute(`
+                UPDATE users
+                SET password = ?
+                WHERE id = ?
+            `, [
+
+                newPasswordHash,
+
+                user.id
+
+            ]);
+
+
+            res.json({
+
+                message:
+                    "Contraseña actualizada correctamente"
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error cambiando contraseña:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "Error interno del servidor"
+
+            });
+
+        }
 
     }
+);
 
-
-    // ========================================
-    // VALIDAR LONGITUD
-    // ========================================
-
-    if (newPassword.length < 8) {
-
-        return res.status(400).json({
-            error: "La nueva contraseña debe tener al menos 8 caracteres"
-        });
-
-    }
-
-
-    // ========================================
-    // OBTENER USUARIO DE LA SESIÓN
-    // ========================================
-
-    const user = db
-        .prepare(`
-            SELECT *
-            FROM users
-            WHERE id = ?
-        `)
-        .get(req.session.user.id);
-
-
-    if (!user) {
-
-        return res.status(404).json({
-            error: "Usuario no encontrado"
-        });
-
-    }
-
-
-    // ========================================
-    // COMPROBAR CONTRASEÑA ACTUAL
-    // ========================================
-
-    const passwordCorrect =
-        await bcrypt.compare(
-            currentPassword,
-            user.password
-        );
-
-
-    if (!passwordCorrect) {
-
-        return res.status(401).json({
-            error: "La contraseña actual es incorrecta"
-        });
-
-    }
-
-
-    // ========================================
-    // GENERAR NUEVO HASH
-    // ========================================
-
-    const newPasswordHash =
-        await bcrypt.hash(
-            newPassword,
-            10
-        );
-
-
-    // ========================================
-    // ACTUALIZAR CONTRASEÑA
-    // ========================================
-
-    db.prepare(`
-        UPDATE users
-        SET password = ?
-        WHERE id = ?
-    `).run(
-        newPasswordHash,
-        user.id
-    );
-
-
-    // ========================================
-    // RESPUESTA
-    // ========================================
-
-    res.json({
-        message: "Contraseña actualizada correctamente"
-    });
-
-});
 
 // ========================================
 // GET - OBTENER PRODUCTOS
 // ========================================
 
-app.get("/api/products", (req, res) => {
+app.get("/api/products", async (req, res) => {
 
-    const products = db
-        .prepare(`
-            SELECT *
-            FROM products
-            WHERE available = 1
-            ORDER BY id DESC
-        `)
-        .all();
+    try {
 
-    res.json(products);
+        const products =
+            await getAll(`
+                SELECT *
+                FROM products
+                WHERE available = 1
+                ORDER BY id DESC
+            `);
+
+
+        res.json(products);
+
+    } catch (error) {
+
+        console.error(
+            "Error obteniendo productos:",
+            error
+        );
+
+        res.status(500).json({
+
+            error:
+                "No se pudieron obtener los productos"
+
+        });
+
+    }
 
 });
 
@@ -682,810 +829,1210 @@ app.get("/api/products", (req, res) => {
 // GET - OBTENER TODOS LOS PRODUCTOS PARA ADMIN
 // ========================================
 
-app.get("/api/admin/products", requireLogin, (req, res) => {
+app.get(
+    "/api/admin/products",
+    requireLogin,
+    async (req, res) => {
 
-    const products = db
-        .prepare(`
-            SELECT *
-            FROM products
-            ORDER BY id DESC
-        `)
-        .all();
+        try {
 
-    res.json(products);
+            const products =
+                await getAll(`
+                    SELECT *
+                    FROM products
+                    ORDER BY id DESC
+                `);
 
-});
+
+            res.json(products);
+
+        } catch (error) {
+
+            console.error(
+                "Error obteniendo productos:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudieron obtener los productos"
+
+            });
+
+        }
+
+    }
+);
 
 
 // ========================================
 // PUT - EDITAR PRODUCTO
 // ========================================
 
-app.put("/api/products/:id", requireLogin, upload.single("image"), (req, res) => {
+app.put(
+    "/api/products/:id",
+    requireLogin,
+    upload.single("image"),
+    async (req, res) => {
 
-    const { id } = req.params;
+        try {
 
-   const {
-    name,
-    description,
-    price,
-    category
-} = req.body;
+            const { id } = req.params;
 
-    // Validar datos
-    if (!name || !price) {
+            const {
+                name,
+                description,
+                price,
+                category
+            } = req.body;
 
-        return res.status(400).json({
-            error: "El nombre y el precio son obligatorios"
-        });
 
-    }
+            if (!name || !price) {
 
-    // Obtener producto actual
-    const currentProduct = db
-        .prepare(`
-            SELECT *
-            FROM products
-            WHERE id = ?
-        `)
-        .get(id);
+                return res.status(400).json({
 
-    // Comprobar si existe
-    if (!currentProduct) {
+                    error:
+                        "El nombre y el precio son obligatorios"
 
-        return res.status(404).json({
-            error: "Producto no encontrado"
-        });
+                });
 
-    }
+            }
 
-    // Mantener la imagen anterior si no se selecciona una nueva
-    const image =
-        req.file
-            ? `/images/${req.file.filename}`
-            : currentProduct.image;
 
-    // Actualizar producto
-    db
-        .prepare(`
-            UPDATE products
+            const currentProduct =
+                await getOne(`
+                    SELECT *
+                    FROM products
+                    WHERE id = ?
+                `, [id]);
+
+
+            if (!currentProduct) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Producto no encontrado"
+
+                });
+
+            }
+
+
+            const image =
+                req.file
+                    ? `/images/${req.file.filename}`
+                    : currentProduct.image;
+
+
+            await execute(`
+                UPDATE products
+
                 SET
-                   name = ?,
-            description = ?,
-            price = ?,
-            category = ?,
-            image = ?,
-            available = ?
-            WHERE id = ?
-        `)
+                    name = ?,
+                    description = ?,
+                    price = ?,
+                    category = ?,
+                    image = ?,
+                    available = ?
 
-       .run(
-    name,
-    description || "",
-    price,
-    category || "Platos principales",
-    image,
-    currentProduct.available,
-    id
+                WHERE id = ?
+            `, [
+
+                name,
+
+                description || "",
+
+                price,
+
+                category ||
+                    "Platos principales",
+
+                image,
+
+                currentProduct.available,
+
+                id
+
+            ]);
+
+
+            const updatedProduct =
+                await getOne(`
+                    SELECT *
+                    FROM products
+                    WHERE id = ?
+                `, [id]);
+
+
+            res.json(updatedProduct);
+
+        } catch (error) {
+
+            console.error(
+                "Error editando producto:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo editar el producto"
+
+            });
+
+        }
+
+    }
 );
 
-    // Obtener producto actualizado
-    const updatedProduct = db
-        .prepare(`
-            SELECT *
-            FROM products
-            WHERE id = ?
-        `)
-        .get(id);
-
-    res.json(updatedProduct);
-
-});
 
 // ========================================
-// PUT - CAMBIAR DISPONIBILIDAD DEL PRODUCTO
+// PUT - CAMBIAR DISPONIBILIDAD
 // ========================================
 
-app.put("/api/products/:id/availability", requireLogin, (req, res) => {
+app.put(
+    "/api/products/:id/availability",
+    requireLogin,
+    async (req, res) => {
 
-    const { id } = req.params;
-    const { available } = req.body;
+        try {
 
-    const result = db
-        .prepare(`
-            UPDATE products
-            SET available = ?
-            WHERE id = ?
-        `)
-        .run(
-            available ? 1 : 0,
-            id
-        );
+            const { id } = req.params;
 
-    if (result.changes === 0) {
+            const { available } = req.body;
 
-        return res.status(404).json({
-            error: "Producto no encontrado"
-        });
+
+            const result =
+                await execute(`
+                    UPDATE products
+                    SET available = ?
+                    WHERE id = ?
+                `, [
+
+                    available ? 1 : 0,
+
+                    id
+
+                ]);
+
+
+            if (Number(result.rowsAffected) === 0) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Producto no encontrado"
+
+                });
+
+            }
+
+
+            res.json({
+
+                message:
+                    "Disponibilidad actualizada correctamente"
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error cambiando disponibilidad:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo actualizar la disponibilidad"
+
+            });
+
+        }
 
     }
+);
 
-    res.json({
-        message: "Disponibilidad actualizada correctamente"
-    });
-
-});
 
 // ========================================
 // POST - CREAR PRODUCTO
 // ========================================
 
-app.post("/api/products", requireLogin, upload.single("image"), (req, res) => {
+app.post(
+    "/api/products",
+    requireLogin,
+    upload.single("image"),
+    async (req, res) => {
 
-    const {
-    name,
-    description,
-    price,
-    category
-} = req.body;
+        try {
 
-const image =
-    req.file ? `/images/${req.file.filename}` : "";
+            const {
+                name,
+                description,
+                price,
+                category
+            } = req.body;
 
 
-    // Validar datos
-    if (!name || !price) {
+            const image =
+                req.file
+                    ? `/images/${req.file.filename}`
+                    : "";
 
-        return res.status(400).json({
-            error: "El nombre y el precio son obligatorios"
-        });
+
+            if (!name || !price) {
+
+                return res.status(400).json({
+
+                    error:
+                        "El nombre y el precio son obligatorios"
+
+                });
+
+            }
+
+
+            const result =
+                await execute(`
+                    INSERT INTO products
+                    (
+                        name,
+                        description,
+                        price,
+                        image,
+                        category
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                `, [
+
+                    name,
+
+                    description || "",
+
+                    price,
+
+                    image,
+
+                    category ||
+                        "Platos principales"
+
+                ]);
+
+
+            const newProduct =
+                await getOne(`
+                    SELECT *
+                    FROM products
+                    WHERE id = ?
+                `, [
+                    Number(result.lastInsertRowid)
+                ]);
+
+
+            res.status(201).json(
+                newProduct
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error creando producto:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo crear el producto"
+
+            });
+
+        }
 
     }
-
-
-    // Guardar producto en SQLite
-  const result = db
-    .prepare(`
-        INSERT INTO products
-        (name, description, price, image, category)
-        VALUES (?, ?, ?, ?, ?)
-    `)
-    .run(
-        name,
-        description || "",
-        price,
-        image,
-        category || "Platos principales"
-    );
-
-
-    // Obtener el producto recién creado
-    const newProduct = db
-        .prepare(`
-            SELECT *
-            FROM products
-            WHERE id = ?
-        `)
-        .get(result.lastInsertRowid);
-
-
-    // Enviar respuesta
-    res.status(201).json(newProduct);
-
-});
+);
 
 
 // ========================================
 // POST - CREAR PEDIDO
 // ========================================
 
-app.post("/api/orders", (req, res) => {
+app.post(
+    "/api/orders",
+    async (req, res) => {
 
-    const {
-        customerName,
-        customerPhone,
-        customerAddress,
-        items
-    } = req.body;
+        try {
 
-
-    // ========================================
-    // VALIDAR DATOS DEL CLIENTE
-    // ========================================
-
-    if (
-        !customerName ||
-        !customerPhone ||
-        !customerAddress ||
-        !items ||
-        items.length === 0
-    ) {
-
-        return res.status(400).json({
-            error: "Todos los datos del pedido son obligatorios"
-        });
-
-    }
-
-
-    // ========================================
-    // CALCULAR TOTAL
-    // ========================================
-
-    let total = 0;
-
-    const orderItems = [];
-
-
-    for (const item of items) {
-
-        const product = db
-            .prepare(`
-                SELECT *
-                FROM products
-                WHERE id = ?
-                AND available = 1
-            `)
-            .get(item.id);
-
-
-        if (!product) {
-
-            return res.status(400).json({
-                error: "Uno de los productos no está disponible"
-            });
-
-        }
-
-
-        const quantity = Number(item.quantity);
-
-
-        if (!Number.isInteger(quantity) || quantity <= 0) {
-
-            return res.status(400).json({
-                error: "Cantidad de producto inválida"
-            });
-
-        }
-
-
-        const subtotal =
-            Number(product.price) * quantity;
-
-
-        total += subtotal;
-
-
-        orderItems.push({
-
-            productId: product.id,
-
-            productName: product.name,
-
-            quantity: quantity,
-
-            price: Number(product.price),
-
-            subtotal: subtotal
-
-        });
-
-    }
-
-
-    // ========================================
-    // GUARDAR PEDIDO
-    // ========================================
-
-    const createOrder = db.transaction(() => {
-
-        const orderResult = db
-            .prepare(`
-                INSERT INTO orders
-                (
-                    customer_name,
-                    customer_phone,
-                    customer_address,
-                    total
-                )
-                VALUES (?, ?, ?, ?)
-            `)
-            .run(
+            const {
                 customerName,
                 customerPhone,
                 customerAddress,
-                total
+                items
+            } = req.body;
+
+
+            if (
+                !customerName ||
+                !customerPhone ||
+                !customerAddress ||
+                !items ||
+                items.length === 0
+            ) {
+
+                return res.status(400).json({
+
+                    error:
+                        "Todos los datos del pedido son obligatorios"
+
+                });
+
+            }
+
+
+            let total = 0;
+
+            const orderItems = [];
+
+
+            for (const item of items) {
+
+                const product =
+                    await getOne(`
+                        SELECT *
+                        FROM products
+                        WHERE id = ?
+                        AND available = 1
+                    `, [item.id]);
+
+
+                if (!product) {
+
+                    return res.status(400).json({
+
+                        error:
+                            "Uno de los productos no está disponible"
+
+                    });
+
+                }
+
+
+                const quantity =
+                    Number(item.quantity);
+
+
+                if (
+                    !Number.isInteger(quantity) ||
+                    quantity <= 0
+                ) {
+
+                    return res.status(400).json({
+
+                        error:
+                            "Cantidad de producto inválida"
+
+                    });
+
+                }
+
+
+                const subtotal =
+                    Number(product.price) *
+                    quantity;
+
+
+                total += subtotal;
+
+
+                orderItems.push({
+
+                    productId:
+                        Number(product.id),
+
+                    productName:
+                        product.name,
+
+                    quantity:
+                        quantity,
+
+                    price:
+                        Number(product.price),
+
+                    subtotal:
+                        subtotal
+
+                });
+
+            }
+
+
+            // ========================================
+            // CREAR PEDIDO
+            // ========================================
+
+            const orderResult =
+                await execute(`
+                    INSERT INTO orders
+                    (
+                        customer_name,
+                        customer_phone,
+                        customer_address,
+                        total
+                    )
+                    VALUES (?, ?, ?, ?)
+                `, [
+
+                    customerName,
+
+                    customerPhone,
+
+                    customerAddress,
+
+                    total
+
+                ]);
+
+
+            const orderId =
+                Number(
+                    orderResult.lastInsertRowid
+                );
+
+
+            // ========================================
+            // GUARDAR PRODUCTOS DEL PEDIDO
+            // ========================================
+
+            for (const item of orderItems) {
+
+                await execute(`
+                    INSERT INTO order_items
+                    (
+                        order_id,
+                        product_id,
+                        product_name,
+                        quantity,
+                        price,
+                        subtotal
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?)
+                `, [
+
+                    orderId,
+
+                    item.productId,
+
+                    item.productName,
+
+                    item.quantity,
+
+                    item.price,
+
+                    item.subtotal
+
+                ]);
+
+            }
+
+
+            res.status(201).json({
+
+                message:
+                    "Pedido registrado correctamente",
+
+                orderId:
+                    orderId,
+
+                total:
+                    total.toFixed(2)
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error creando pedido:",
+                error
             );
 
+            res.status(500).json({
 
-        const orderId =
-            orderResult.lastInsertRowid;
-
-
-        // ========================================
-        // GUARDAR PRODUCTOS DEL PEDIDO
-        // ========================================
-
-        const insertItem = db
-            .prepare(`
-                INSERT INTO order_items
-                (
-                    order_id,
-                    product_id,
-                    product_name,
-                    quantity,
-                    price,
-                    subtotal
-                )
-                VALUES (?, ?, ?, ?, ?, ?)
-            `);
-
-
-        for (const item of orderItems) {
-
-            insertItem.run(
-                orderId,
-                item.productId,
-                item.productName,
-                item.quantity,
-                item.price,
-                item.subtotal
-            );
-
-        }
-
-
-        return orderId;
-
-    });
-
-
-    const orderId = createOrder();
-
-
-    // ========================================
-    // RESPUESTA
-    // ========================================
-
-    res.status(201).json({
-
-        message: "Pedido registrado correctamente",
-
-        orderId: orderId,
-
-        total: total.toFixed(2)
-
-    });
-
-});
-
-// ========================================
-// GET - OBTENER PEDIDOS
-// ========================================
-
-app.get("/api/orders", requireLogin, (req, res) => {
-
-    const orders = db
-    .prepare(`
-        SELECT *
-        FROM orders
-        ORDER BY
-            CASE
-                WHEN status = 'Pendiente' THEN 0
-                WHEN status = 'En preparación' THEN 1
-                WHEN status = 'Listo' THEN 2
-                WHEN status = 'Entregado' THEN 3
-                ELSE 4
-            END,
-            id DESC
-    `)
-    .all();
-
-
-    // Obtener productos de cada pedido
-
-    const getItems = db.prepare(`
-        SELECT *
-        FROM order_items
-        WHERE order_id = ?
-    `);
-
-
-    const ordersWithItems = orders.map(order => {
-
-        return {
-            ...order,
-            items: getItems.all(order.id)
-        };
-
-    });
-
-
-    res.json(ordersWithItems);
-
-});
-
-
-// ========================================
-// GET - OBTENER CONFIGURACIÓN DEL RESTAURANTE
-// ========================================
-
-app.get("/api/restaurant-settings", (req, res) => {
-
-    const settings = db.prepare(`
-        SELECT *
-        FROM restaurant_settings
-        WHERE id = 1
-    `).get();
-
-
-    if (!settings) {
-
-        return res.status(404).json({
-            error: "No existe la configuración del restaurante"
-        });
-
-    }
-
-
-    res.json(settings);
-
-});
-
-
-// ========================================
-// PUT - GUARDAR CONFIGURACIÓN DEL RESTAURANTE
-// ========================================
-
-app.put(
-    "/api/restaurant-settings",
-    requireLogin,
-    (req, res) => {
-
-        const {
-            name,
-
-            main_title,
-            main_subtitle,
-            description,
-
-            phone,
-            whatsapp,
-            address,
-            hours,
-
-            button_text,
-            secondary_button_text,
-
-            menu_subtitle,
-            menu_title,
-            menu_description,
-
-            about_subtitle,
-            about_title,
-            about_text,
-            about_text2,
-
-            contact_subtitle,
-            contact_title,
-            contact_text
-
-        } = req.body;
-
-
-        // ========================================
-        // VALIDAR NOMBRE
-        // ========================================
-
-        if (!name || !name.trim()) {
-
-            return res.status(400).json({
                 error:
-                    "El nombre del restaurante es obligatorio"
+                    "No se pudo registrar el pedido"
+
             });
 
         }
-
-
-        // ========================================
-        // ACTUALIZAR CONFIGURACIÓN
-        // ========================================
-
-        db.prepare(`
-            UPDATE restaurant_settings
-
-            SET
-                name = ?,
-
-                main_title = ?,
-                main_subtitle = ?,
-                description = ?,
-
-                phone = ?,
-                whatsapp = ?,
-                address = ?,
-                hours = ?,
-
-                button_text = ?,
-                secondary_button_text = ?,
-
-                menu_subtitle = ?,
-                menu_title = ?,
-                menu_description = ?,
-
-                about_subtitle = ?,
-                about_title = ?,
-                about_text = ?,
-                about_text2 = ?,
-
-                contact_subtitle = ?,
-                contact_title = ?,
-                contact_text = ?
-
-            WHERE id = 1
-        `).run(
-
-            name.trim(),
-
-            main_title || "",
-            main_subtitle || "",
-            description || "",
-
-            phone || "",
-            whatsapp || "",
-            address || "",
-            hours || "",
-
-            button_text || "",
-            secondary_button_text || "",
-
-            menu_subtitle || "",
-            menu_title || "",
-            menu_description || "",
-
-            about_subtitle || "",
-            about_title || "",
-            about_text || "",
-            about_text2 || "",
-
-            contact_subtitle || "",
-            contact_title || "",
-            contact_text || ""
-
-        );
-
-
-        // ========================================
-        // OBTENER DATOS ACTUALIZADOS
-        // ========================================
-
-        const updatedSettings =
-            db.prepare(`
-                SELECT *
-                FROM restaurant_settings
-                WHERE id = 1
-            `).get();
-
-
-        res.json({
-
-            message:
-                "Información del restaurante guardada correctamente",
-
-            settings:
-                updatedSettings
-
-        });
 
     }
 );
 
 
+// ========================================
+// GET - OBTENER PEDIDOS
+// ========================================
+
+app.get(
+    "/api/orders",
+    requireLogin,
+    async (req, res) => {
+
+        try {
+
+            const orders =
+                await getAll(`
+                    SELECT *
+                    FROM orders
+
+                    ORDER BY
+                        CASE
+                            WHEN status = 'Pendiente'
+                                THEN 0
+
+                            WHEN status = 'En preparación'
+                                THEN 1
+
+                            WHEN status = 'Listo'
+                                THEN 2
+
+                            WHEN status = 'Entregado'
+                                THEN 3
+
+                            ELSE 4
+
+                        END,
+
+                        id DESC
+                `);
+
+
+            const ordersWithItems = [];
+
+
+            for (const order of orders) {
+
+                const items =
+                    await getAll(`
+                        SELECT *
+                        FROM order_items
+                        WHERE order_id = ?
+                    `, [
+                        order.id
+                    ]);
+
+
+                ordersWithItems.push({
+
+                    ...order,
+
+                    items:
+                        items
+
+                });
+
+            }
+
+
+            res.json(
+                ordersWithItems
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error obteniendo pedidos:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudieron obtener los pedidos"
+
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// GET - CONFIGURACIÓN DEL RESTAURANTE
+// ========================================
+
+app.get(
+    "/api/restaurant-settings",
+    async (req, res) => {
+
+        try {
+
+            const settings =
+                await getOne(`
+                    SELECT *
+                    FROM restaurant_settings
+                    WHERE id = 1
+                `);
+
+
+            if (!settings) {
+
+                return res.status(404).json({
+
+                    error:
+                        "No existe la configuración del restaurante"
+
+                });
+
+            }
+
+
+            res.json(settings);
+
+        } catch (error) {
+
+            console.error(
+                "Error obteniendo configuración:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo obtener la configuración"
+
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// PUT - GUARDAR CONFIGURACIÓN
+// ========================================
+
+app.put(
+    "/api/restaurant-settings",
+    requireLogin,
+    async (req, res) => {
+
+        try {
+
+            const {
+
+                name,
+
+                main_title,
+                main_subtitle,
+                description,
+
+                phone,
+                whatsapp,
+                address,
+                hours,
+
+                button_text,
+                secondary_button_text,
+
+                menu_subtitle,
+                menu_title,
+                menu_description,
+
+                about_subtitle,
+                about_title,
+                about_text,
+                about_text2,
+
+                contact_subtitle,
+                contact_title,
+                contact_text
+
+            } = req.body;
+
+
+            if (!name || !name.trim()) {
+
+                return res.status(400).json({
+
+                    error:
+                        "El nombre del restaurante es obligatorio"
+
+                });
+
+            }
+
+
+            await execute(`
+                UPDATE restaurant_settings
+
+                SET
+
+                    name = ?,
+
+                    main_title = ?,
+                    main_subtitle = ?,
+                    description = ?,
+
+                    phone = ?,
+                    whatsapp = ?,
+                    address = ?,
+                    hours = ?,
+
+                    button_text = ?,
+                    secondary_button_text = ?,
+
+                    menu_subtitle = ?,
+                    menu_title = ?,
+                    menu_description = ?,
+
+                    about_subtitle = ?,
+                    about_title = ?,
+                    about_text = ?,
+                    about_text2 = ?,
+
+                    contact_subtitle = ?,
+                    contact_title = ?,
+                    contact_text = ?
+
+                WHERE id = 1
+            `, [
+
+                name.trim(),
+
+                main_title || "",
+                main_subtitle || "",
+                description || "",
+
+                phone || "",
+                whatsapp || "",
+                address || "",
+                hours || "",
+
+                button_text || "",
+                secondary_button_text || "",
+
+                menu_subtitle || "",
+                menu_title || "",
+                menu_description || "",
+
+                about_subtitle || "",
+                about_title || "",
+                about_text || "",
+                about_text2 || "",
+
+                contact_subtitle || "",
+                contact_title || "",
+                contact_text || ""
+
+            ]);
+
+
+            const updatedSettings =
+                await getOne(`
+                    SELECT *
+                    FROM restaurant_settings
+                    WHERE id = 1
+                `);
+
+
+            res.json({
+
+                message:
+                    "Información del restaurante guardada correctamente",
+
+                settings:
+                    updatedSettings
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error guardando configuración:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo guardar la configuración"
+
+            });
+
+        }
+
+    }
+);
 
 
 // ========================================
 // GET - OBTENER CLIENTES
 // ========================================
 
-app.get("/api/clients", requireLogin, (req, res) => {
+app.get(
+    "/api/clients",
+    requireLogin,
+    async (req, res) => {
 
-    const clients = db.prepare(`
-        SELECT
-            customer_name,
-            customer_phone,
-            customer_address,
-            COUNT(*) AS total_orders,
-            SUM(total) AS total_spent
-        FROM orders
-        GROUP BY customer_phone
-        ORDER BY total_orders DESC
-    `).all();
+        try {
 
-    res.json(clients);
+            const clients =
+                await getAll(`
+                    SELECT
 
-});
+                        customer_name,
+
+                        customer_phone,
+
+                        customer_address,
+
+                        COUNT(*) AS total_orders,
+
+                        SUM(total) AS total_spent
+
+                    FROM orders
+
+                    GROUP BY customer_phone
+
+                    ORDER BY total_orders DESC
+                `);
+
+
+            res.json(clients);
+
+        } catch (error) {
+
+            console.error(
+                "Error obteniendo clientes:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudieron obtener los clientes"
+
+            });
+
+        }
+
+    }
+);
 
 
 // ========================================
-// GET - OBTENER DETALLE DE UN PEDIDO
+// GET - DETALLE DE PEDIDO
 // ========================================
 
-app.get("/api/orders/:id/items", requireLogin, (req, res) => {
+app.get(
+    "/api/orders/:id/items",
+    requireLogin,
+    async (req, res) => {
 
-    const { id } = req.params;
+        try {
 
-    const items = db
-        .prepare(`
-            SELECT *
-            FROM order_items
-            WHERE order_id = ?
-            ORDER BY id ASC
-        `)
-        .all(id);
+            const { id } =
+                req.params;
 
-    res.json(items);
 
-});
+            const items =
+                await getAll(`
+                    SELECT *
+                    FROM order_items
+                    WHERE order_id = ?
+                    ORDER BY id ASC
+                `, [id]);
+
+
+            res.json(items);
+
+        } catch (error) {
+
+            console.error(
+                "Error obteniendo detalle:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo obtener el detalle del pedido"
+
+            });
+
+        }
+
+    }
+);
+
 
 // ========================================
 // PUT - CAMBIAR ESTADO DEL PEDIDO
 // ========================================
 
-app.put("/api/orders/:id/status", requireLogin, (req, res) => {
+app.put(
+    "/api/orders/:id/status",
+    requireLogin,
+    async (req, res) => {
 
-    const { id } = req.params;
-    const { status } = req.body;
+        try {
 
+            const { id } =
+                req.params;
 
-    // Estados permitidos
-
-    const allowedStatuses = [
-        "Pendiente",
-        "En preparación",
-        "Listo",
-        "Entregado"
-    ];
+            const { status } =
+                req.body;
 
 
-    // Comprobar estado
+            const allowedStatuses = [
 
-    if (!allowedStatuses.includes(status)) {
+                "Pendiente",
 
-        return res.status(400).json({
-            error: "Estado de pedido no válido"
-        });
+                "En preparación",
+
+                "Listo",
+
+                "Entregado"
+
+            ];
+
+
+            if (!allowedStatuses.includes(status)) {
+
+                return res.status(400).json({
+
+                    error:
+                        "Estado de pedido no válido"
+
+                });
+
+            }
+
+
+            const result =
+                await execute(`
+                    UPDATE orders
+                    SET status = ?
+                    WHERE id = ?
+                `, [
+
+                    status,
+
+                    id
+
+                ]);
+
+
+            if (Number(result.rowsAffected) === 0) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Pedido no encontrado"
+
+                });
+
+            }
+
+
+            res.json({
+
+                message:
+                    "Estado actualizado correctamente"
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error actualizando estado:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo actualizar el estado"
+
+            });
+
+        }
 
     }
+);
 
-
-    // Actualizar estado
-
-    const result = db
-        .prepare(`
-            UPDATE orders
-            SET status = ?
-            WHERE id = ?
-        `)
-        .run(status, id);
-
-
-    // Comprobar pedido
-
-    if (result.changes === 0) {
-
-        return res.status(404).json({
-            error: "Pedido no encontrado"
-        });
-
-    }
-
-
-    res.json({
-        message: "Estado actualizado correctamente"
-    });
-
-});
 
 // ========================================
 // DELETE - ELIMINAR PEDIDO
 // ========================================
 
-app.delete("/api/orders/:id", requireLogin, (req, res) => {
+app.delete(
+    "/api/orders/:id",
+    requireLogin,
+    async (req, res) => {
 
-    const { id } = req.params;
+        try {
 
-
-    // ========================================
-    // ELIMINAR PEDIDO Y SUS PRODUCTOS
-    // ========================================
-
-    const deleteOrder = db.transaction(() => {
-
-        // Eliminar productos del pedido
-
-        db.prepare(`
-            DELETE FROM order_items
-            WHERE order_id = ?
-        `).run(id);
+            const { id } =
+                req.params;
 
 
-        // Eliminar pedido
+            // Eliminar productos del pedido
 
-        const result = db.prepare(`
-            DELETE FROM orders
-            WHERE id = ?
-        `).run(id);
-
-
-        return result;
-
-    });
+            await execute(`
+                DELETE FROM order_items
+                WHERE order_id = ?
+            `, [id]);
 
 
-    const result = deleteOrder();
+            // Eliminar pedido
+
+            const result =
+                await execute(`
+                    DELETE FROM orders
+                    WHERE id = ?
+                `, [id]);
 
 
-    // ========================================
-    // COMPROBAR PEDIDO
-    // ========================================
+            if (Number(result.rowsAffected) === 0) {
 
-    if (result.changes === 0) {
+                return res.status(404).json({
 
-        return res.status(404).json({
-            error: "Pedido no encontrado"
-        });
+                    error:
+                        "Pedido no encontrado"
+
+                });
+
+            }
+
+
+            res.json({
+
+                message:
+                    "Pedido eliminado correctamente"
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error eliminando pedido:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo eliminar el pedido"
+
+            });
+
+        }
 
     }
-
-
-    res.json({
-        message: "Pedido eliminado correctamente"
-    });
-
-});
-
+);
 
 
 // ========================================
 // DELETE - ELIMINAR PRODUCTO
 // ========================================
 
-app.delete("/api/products/:id", requireLogin, (req, res) => {
+app.delete(
+    "/api/products/:id",
+    requireLogin,
+    async (req, res) => {
 
-    const { id } = req.params;
+        try {
 
-    const result = db
-        .prepare(`
-            DELETE FROM products
-            WHERE id = ?
-        `)
-        .run(id);
+            const { id } =
+                req.params;
 
-    if (result.changes === 0) {
 
-        return res.status(404).json({
-            error: "Producto no encontrado"
-        });
+            const result =
+                await execute(`
+                    DELETE FROM products
+                    WHERE id = ?
+                `, [id]);
+
+
+            if (Number(result.rowsAffected) === 0) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Producto no encontrado"
+
+                });
+
+            }
+
+
+            res.json({
+
+                message:
+                    "Producto eliminado correctamente"
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error eliminando producto:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "No se pudo eliminar el producto"
+
+            });
+
+        }
 
     }
+);
 
-    res.json({
-        message: "Producto eliminado correctamente"
-    });
-
-});
 
 // ========================================
 // INICIAR SERVIDOR
 // ========================================
 
-app.listen(PORT, () => {
+async function startServer() {
 
-    console.log(
-        `Servidor funcionando en http://localhost:${PORT}`
-    );
+    try {
 
-});
+        await initializeDatabase();
 
 
+        app.listen(
+            PORT,
+            () => {
+
+                console.log(
+                    `Servidor funcionando en http://localhost:${PORT}`
+                );
+
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "No se pudo iniciar el servidor:",
+            error
+        );
+
+        process.exit(1);
+
+    }
+
+}
+
+
+startServer();

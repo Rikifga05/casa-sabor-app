@@ -1,19 +1,10 @@
-const Database = require("better-sqlite3");
-const path = require("path");
-const fs = require("fs");
+const { createClient } = require("@libsql/client");
 
-const dbPath = path.join(
-    __dirname,
-    "..",
-    "data",
-    "restaurant.db"
-);
+const db = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN
+});
 
-// Crear la carpeta data si no existe
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-
-const db = new Database(dbPath);
-
-console.log("Base de datos conectada correctamente");
+console.log("Conexión con Turso configurada correctamente");
 
 module.exports = db;
