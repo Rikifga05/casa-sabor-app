@@ -7,52 +7,29 @@ const session = require("express-session");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+
+
+// ========================================
+// CONFIGURACIÓN DE CLOUDINARY
+// ========================================
+
+cloudinary.config({
+
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+
+    api_key: process.env.CLOUDINARY_API_KEY,
+
+    api_secret: process.env.CLOUDINARY_API_SECRET
+
+});
 
 
 // ========================================
 // CONFIGURACIÓN DE MULTER
 // ========================================
 
-const storage = multer.diskStorage({
-
-    destination: (req, file, cb) => {
-
-        cb(
-            null,
-            path.join(__dirname, "public", "images")
-        );
-
-    },
-
-    filename: (req, file, cb) => {
-
-        const extension =
-            file.originalname.split(".").pop();
-
-        const filename =
-            Date.now() +
-            "-" +
-            Math.round(Math.random() * 1E9) +
-            "." +
-            extension;
-
-        cb(null, filename);
-
-    }
-
-});
-
-const imagesPath =
-    path.join(__dirname, "public", "images");
-
-if (!fs.existsSync(imagesPath)) {
-
-    fs.mkdirSync(
-        imagesPath,
-        { recursive: true }
-    );
-
-}
+const storage = multer.memoryStorage();
 
 const upload = multer({
     storage: storage
@@ -189,6 +166,52 @@ async function execute(sql, args = []) {
         sql: sql,
 
         args: args
+
+    });
+
+}
+
+
+// ========================================
+// FUNCIÓN PARA SUBIR IMAGEN A CLOUDINARY
+// ========================================
+
+async function uploadImageToCloudinary(file) {
+
+    if (!file) {
+
+        return "";
+
+    }
+
+    return new Promise((resolve, reject) => {
+
+        const uploadStream =
+            cloudinary.uploader.upload_stream(
+
+                {
+                    folder: "casa-sabor/productos",
+
+                    resource_type: "image"
+
+                },
+
+                (error, result) => {
+
+                    if (error) {
+
+                        return reject(error);
+
+                    }
+
+                    resolve(result.secure_url);
+
+                }
+
+            );
+
+
+        uploadStream.end(file.buffer);
 
     });
 
@@ -920,10 +943,22 @@ app.put(
             }
 
 
-            const image =
-                req.file
-                    ? `/images/${req.file.filename}`
-                    : currentProduct.image;
+            let image =
+                currentProduct.image || "";
+
+
+            // ========================================
+            // SUBIR NUEVA IMAGEN A CLOUDINARY
+            // ========================================
+
+            if (req.file) {
+
+                image =
+                    await uploadImageToCloudinary(
+                        req.file
+                    );
+
+            }
 
 
             await execute(`
@@ -1077,12 +1112,6 @@ app.post(
             } = req.body;
 
 
-            const image =
-                req.file
-                    ? `/images/${req.file.filename}`
-                    : "";
-
-
             if (!name || !price) {
 
                 return res.status(400).json({
@@ -1091,6 +1120,22 @@ app.post(
                         "El nombre y el precio son obligatorios"
 
                 });
+
+            }
+
+
+            // ========================================
+            // SUBIR IMAGEN A CLOUDINARY
+            // ========================================
+
+            let image = "";
+
+            if (req.file) {
+
+                image =
+                    await uploadImageToCloudinary(
+                        req.file
+                    );
 
             }
 
@@ -1882,15 +1927,11 @@ app.delete(
                 req.params;
 
 
-            // Eliminar productos del pedido
-
             await execute(`
                 DELETE FROM order_items
                 WHERE order_id = ?
             `, [id]);
 
-
-            // Eliminar pedido
 
             const result =
                 await execute(`
