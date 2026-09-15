@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 
 const db = require("./database/database");
@@ -41,6 +42,12 @@ const upload = multer({
 // ========================================
 
 const app = express();
+
+app.use(cors({
+    origin: [
+        "http://localhost:4000"
+    ]
+}));
 
 app.set("trust proxy", 1);
 
